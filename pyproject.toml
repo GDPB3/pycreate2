@@ -4,49 +4,29 @@
 # see LICENSE for full details
 ##############################################
 
-[tool.poetry]
+[project]
 name = "pycreate2"
 version = "0.8.2"
 description = "A library to control iRobot Create 2 with python"
-authors = ["walchko <walchko@users.noreply.github.com>"]
 readme = "readme.md"
-license = "MIT"
 homepage = "https://pypi.org/project/pycreate2/"
-repository = 'https://github.com/MomsFriendlyRobotCompany/pycreate2'
-# documentation = "http://..."
-keywords = ['roomba','irobot', 'create 2', 'api', 'framework', 'library', 'robotics', 'robot']
-classifiers = [
-    'Development Status :: 4 - Beta',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: MIT License',
-    'Operating System :: OS Independent',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Programming Language :: Python :: 3.11',
-    'Topic :: Software Development :: Libraries',
-    'Topic :: Software Development :: Libraries :: Python Modules',
-    'Topic :: Software Development :: Libraries :: Application Frameworks'
+repository = "https://github.com/GDPB3/pycreate2"
+keywords = ["roomba","irobot", "create 2", "api", "framework", "library", "robotics", "robot"]
+license = { file = "LICENSE" }
+authors = [
+    { name = "walchko", email = "walchko@users.noreply.github.com" },
+    { name = "luengor", email = "aluengor0001@gmail.com" }
+]
+requires-python = ">=3.8"
+dependencies = [
+    "serial>=0.0.97",
 ]
 
-[tool.poetry.scripts]
-create_monitor = "pycreate2.bin.create_monitor:main"
-create_reset = "pycreate2.bin.create_reset:main"
-create_shutdown = "pycreate2.bin.create_shutdown:main"
-
-[tool.poetry.dependencies]
-python = ">=3.8"
-pyserial = "*"
-colorama = "*"
-simplejson = "*"
-#importlib-metadata = {version="*", python="<3.8"}
-
-[tool.poetry.dev-dependencies]
-pytest = "*"
-
-# [mypy-pi_servo_serial]
-# ignore_missing_imports = True
+[project.scripts]
+create_monitor = "pycreate2.scripts.create_monitor:main"
+create_reset = "pycreate2.scripts.create_reset:main"
+create_shutdown = "pycreate2.scripts.create_shutdown:main"
 
 [build-system]
-requires = ["poetry>=1.0.0"]
-build-backend = "poetry.masonry.api"
+requires = ["uv_build>=0.9.3,<0.10.0"]
+build-backend = "uv_build"

@@ -7,7 +7,7 @@
 
 from struct import Struct
 from collections import namedtuple
-from .OI import WheelOvercurrent, BumpsWheelDrops, Buttons as ButtonCodes, ChargeSource, LightBumper as LightBumperCodes, Stasis as StasisCodes
+from pycreate2.OI import WheelOvercurrent, BumpsWheelDrops, Buttons as ButtonCodes, ChargeSource, LightBumper as LightBumperCodes, Stasis as StasisCodes
 
 
 # build some packet decoders:

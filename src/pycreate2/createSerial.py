@@ -5,7 +5,7 @@
 ##############################################
 # This is basically the interface between the Create2 and pyserial
 
-import serial # type:ignore
+import serial
 import struct
 
 
