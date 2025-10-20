@@ -32,17 +32,18 @@ class SerialCommandInterface(object):
         """
         self.close()
 
-    def open(self, port, baud=115200, timeout=1):
+    def open(self, port: str, baud: int = 115200, timeout: int = 1):
         """
         Opens a serial port to the create.
 
-        port: the serial port to open, ie, '/dev/ttyUSB0'
-        buad: default is 115200, but can be changed to a lower rate via the create api
+        :param port: the serial port to open, ie, '/dev/ttyUSB0'
+        :param baud: default is 115200, but can be changed to a lower rate via the create api
+        :param timeout: serial timeout in seconds
         """
         self.ser.port = port
         self.ser.baudrate = baud
         self.ser.timeout = timeout
-        # print self.ser.name
+
         if self.ser.is_open:
             self.ser.close()
         self.ser.open()
@@ -56,29 +57,26 @@ class SerialCommandInterface(object):
         else:
             raise Exception('Failed to open {} at {}'.format(port, baud))
 
-    def write(self, opcode, data=None):
+    def write(self, opcode: int, data: tuple | None = None):
         """
         Writes a command to the create. There needs to be an opcode and optionally
         data. Not all commands have data associated with it.
 
-        opcode: see creaet api
-        data: a tuple with data associated with a given opcode (see api)
-        """
-        msg = (opcode,)
+        :param opcode: The operation opcode to send to the Create (see api)
+        :type opcode: int
 
-        # Sometimes opcodes don't need data. Since we can't add
-        # a None type to a tuple, we have to make this check.
-        if data:
-            msg += data
-        # print(">> write:", msg)
+        :param data: a tuple with data associated with a given opcode (see api)
+        :type data: tuple | None
+        """
+        msg = (opcode,) + data if data else (opcode,)
         self.ser.write(struct.pack('B' * len(msg), *msg))
 
-    def read(self, num_bytes):
+    def read(self, num_bytes: int) -> bytes:
         """
         Read a string of 'num_bytes' bytes from the robot.
 
-        Arguments:
-            num_bytes: The number of bytes we expect to read.
+        :param num_bytes: number of bytes to read from the robot
+        :type num_bytes: int
         """
         if not self.ser.is_open:
             raise Exception('You must open the serial port first')
