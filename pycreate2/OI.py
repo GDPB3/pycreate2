@@ -7,60 +7,159 @@
 
 # could replace with:
 #   class LEDS(object): DEBRIS=0x01; SPOT=0x02; DOCK=0x04; CHECK_ROBOT=0x08
-class Namespace(object):
-    def __init__(self, **kwds):
-        self.__dict__.update(kwds)
+
+from enum import Enum
 
 
-BAUD_RATE           = Namespace(BAUD_300=0, BAUD_600=1, BAUD_1200=2, BAUD_2400=3, BAUD_4800=4, BAUD_9600=5, BAUD_14400=6, BAUD_19200=7, BAUD_28800=8, BAUD_38400=9, BAUD_57600=10, BAUD_115200=11, DEFAULT=11)
-DAYS                = Namespace(SUNDAY=0x01, MONDAY=0x02, TUESDAY=0x04, WEDNESDAY=0x08, THURSDAY=0x10, FRIDAY=0x20, SATURDAY=0x40)
-DRIVE               = Namespace(STRAIGHT=0x8000, STRAIGHT_ALT=0x7FFF, TURN_CW=-1, TURN_CCW=0x0001)
-MOTORS              = Namespace(SIDE_BRUSH=0x01, VACUUM=0x02, MAIN_BRUSH=0x04, SIDE_BRUSH_DIRECTION=0x08, MAIN_BRUSH_DIRECTION=0x10)
-LEDS                = Namespace(DEBRIS=0x01, SPOT=0x02, DOCK=0x04, CHECK_ROBOT=0x08)
+class BaudRate(Enum):
+    BAUD_300 = 0
+    BAUD_600 = 1
+    BAUD_1200 = 2
+    BAUD_2400 = 3
+    BAUD_4800 = 4
+    BAUD_9600 = 5
+    BAUD_14400 = 6
+    BAUD_19200 = 7
+    BAUD_28800 = 8
+    BAUD_38400 = 9
+    BAUD_57600 = 10
+    BAUD_115200 = 11
+    DEFAULT = 11
+
+
+class Days(Enum):
+    SUNDAY = 0x01
+    MONDAY = 0x02
+    TUESDAY = 0x04
+    WEDNESDAY = 0x08
+    THURSDAY = 0x10
+    FRIDAY = 0x20
+    SATURDAY = 0x40
+
+
+class DriveDirection(Enum):
+    STRAIGHT = 0x8000
+    STRAIGHT_ALT = 0x7FFF
+    TURN_CW = -1
+    TURN_CCW = 0x0001
+
+
+class Motor(Enum):
+    SIDE_BRUSH = 0x01
+    VACUUM = 0x02
+    MAIN_BRUSH = 0x04
+    SIDE_BRUSH_DIRECTION = 0x08
+    MAIN_BRUSH_DIRECTION = 0x10
+
+
+class Leds(Enum):
+    DEBRIS = 0x01
+    SPOT = 0x02
+    DOCK = 0x04
+    CHECK_ROBOT = 0x08
+
+
 # WEEKDAY_LEDS        = Namespace(SUNDAY=0x01, MONDAY=0x02, TUESDAY=0x04, WEDNESDAY=0x08, THURSDAY=0x10, FRIDAY=0x20, SATURDAY=0x40)
-WEEKDAY_LEDS        = DAYS
-SCHEDULING_LEDS     = Namespace(COLON=0x01, PM=0x02, AM=0x04, CLOCK=0x08, SCHEDULE=0x10)
-RAW_LED             = Namespace(A=0x01, B=0x02, C=0x04, D=0x08, E=0x10, F=0x20, G=0x40)
-BUTTONS             = Namespace(CLEAN=0x01, SPOT=0x02, DOCK=0x04, MINUTE=0x08, HOUR=0x10, DAY=0x20, SCHEDULE=0x40, CLOCK=0x80)
-ROBOT               = Namespace(TICK_PER_REV=508.8, WHEEL_DIAMETER=72, WHEEL_BASE=235, TICK_TO_DISTANCE=0.44456499814949904317867595046408)
-MODES               = Namespace(OFF=0, PASSIVE=1, SAFE=2, FULL=3)
-WHEEL_OVERCURRENT   = Namespace(SIDE_BRUSH=0x01, MAIN_BRUSH=0x02, RIGHT_WHEEL=0x04, LEFT_WHEEL=0x08)
-BUMPS_WHEEL_DROPS   = Namespace(BUMP_RIGHT=0x01, BUMP_LEFT=0x02, WHEEL_DROP_RIGHT=0x04, WHEEL_DROP_LEFT=0x08)
-CHARGE_SOURCE       = Namespace(INTERNAL=0x01, HOME_BASE=0x02)
-LIGHT_BUMPER        = Namespace(LEFT=0x01, FRONT_LEFT=0x02, CENTER_LEFT=0x04, CENTER_RIGHT=0x08, FRONT_RIGHT=0x10, RIGHT=0x20)
-STASIS              = Namespace(TOGGLING=0x01, DISABLED=0x02)
-OPCODES             = Namespace(
-    RESET=7,
-    OI_MODE=35,
-    START=128,
-    # CONTROL=130,  # oi spec, p 10, this is the same as SAFE
-    SAFE=131,
-    FULL=132,
-    POWER=133,
-    # SPOT=134,
-    # CLEAN=135,
-    # MAX=136,
-    DRIVE=137,
-    MOTORS=138,
-    LED=139,
-    SONG=140,
-    PLAY=141,
-    SENSORS=142,
-    SEEK_DOCK=143,
-    MOTORS_PWM=144,
-    DRIVE_DIRECT=145,
-    DRIVE_PWM=146,
-    # STREAM=148,
-    QUERY_LIST=149,
-    # PAUSE_RESUME_STREAM=150,
-    # SCHEDULING_LED=162,
-    # DIGIT_LED_RAW=163,  # doesn't work
-    DIGIT_LED_ASCII=164,
-    # BUTTONS=165,
-    # SCHEDULE=167,
-    # SET_DAY_TIME=168,
-    STOP=173
-)
+WeekdayLeds = Leds
+
+
+class SchedulingLeds(Enum):
+    COLON = 0x01
+    PM = 0x02
+    AM = 0x04
+    CLOCK = 0x08
+    SCHEDULE = 0x10
+
+
+class RawLed(Enum):
+    A = 0x01
+    B = 0x02
+    C = 0x04
+    D = 0x08
+    E = 0x10
+    F = 0x20
+    G = 0x40
+
+
+class Buttons(Enum):
+    CLEAN = 0x01
+    SPOT = 0x02
+    DOCK = 0x04
+    MINUTE = 0x08
+    HOUR = 0x10
+    DAY = 0x20
+    SCHEDULE = 0x40
+    CLOCK = 0x80
+
+
+class Robot(Enum):
+    TICK_PER_REV = 508.8
+    WHEEL_DIAMETER = 72  # mm
+    WHEEL_BASE = 235     # mm
+    TICK_TO_DISTANCE = 0.44456499814949904317867595046408  # mm per tick
+
+
+class Modes(Enum):
+    OFF = 0
+    PASSIVE = 1
+    SAFE = 2
+    FULL = 3
+
+
+class WheelOvercurrent(Enum):
+    SIDE_BRUSH = 0x01
+    MAIN_BRUSH = 0x02
+    RIGHT_WHEEL = 0x04
+    LEFT_WHEEL = 0x08
+
+
+class BumpsWheelDrops(Enum):
+    BUMP_RIGHT = 0x01
+    BUMP_LEFT = 0x02
+    WHEEL_DROP_RIGHT = 0x04
+    WHEEL_DROP_LEFT = 0x08
+
+
+class ChargeSource(Enum):
+    INTERNAL = 0x01
+    HOME_BASE = 0x02
+
+
+class LightBumper(Enum):
+    LEFT = 0x01
+    FRONT_LEFT = 0x02
+    CENTER_LEFT = 0x04
+    CENTER_RIGHT = 0x08
+    FRONT_RIGHT = 0x10
+    RIGHT = 0x20
+
+
+class Stasis(Enum):
+    TOGGLING = 0x01
+    DISABLED = 0x02
+
+
+class Opcodes(Enum):
+    RESET = 7
+    OI_MODE = 35
+    START = 128
+    SAFE = 131
+    FULL = 132
+    POWER = 133
+    DRIVE = 137
+    MOTORS = 138
+    LED = 139
+    SONG = 140
+    PLAY = 141
+    SENSORS = 142
+    SEEK_DOCK = 143
+    MOTORS_PWM = 144
+    DRIVE_DIRECT = 145
+    DRIVE_PWM = 146
+    QUERY_LIST = 149
+    DIGIT_LED_ASCII = 164
+    STOP = 173
+
 
 RESPONSE_SIZES = {
     0: 26, 1: 10, 2: 6, 3: 10, 4: 14, 5: 12, 6: 52,
@@ -81,152 +180,150 @@ def calc_query_data_len(pkts):
     return packet_size
 
 
-CHARGING_STATE = {
-    0: 'not charging',
-    1: 'reconditioning charging',
-    2: 'full charging',
-    3: 'trickle charging',
-    4: 'waiting',
-    5: 'charging fault condition'
-}
+class ChargingState(Enum):
+    NOT_CHARGING = 0
+    RECONDITIONING_CHARGING = 1
+    FULL_CHARGING = 2
+    TRICKLE_CHARGING = 3
+    WAITING = 4
+    CHARGING_FAULT_CONDITION = 5
 
 
-MIDI_TABLE = {
-    "rest": 0,
-    "G#1": 32,
-    "G#3": 56,
-    "G#2": 44,
-    "G#5": 80,
-    "G#4": 68,
-    "G#7": 104,
-    "G#6": 92,
-    "G#8": 116,
-    "G7": 103,
-    "G6": 91,
-    "G5": 79,
-    "G4": 67,
-    "G3": 55,
-    "G2": 43,
-    "G1": 31,
-    "G9": 127,
-    "G8": 115,
-    "A7": 105,
-    "D#9": 123,
-    "A8": 117,
-    "B4": 71,
-    "B5": 83,
-    "B6": 95,
-    "B7": 107,
-    "B1": 35,
-    "B2": 47,
-    "B3": 59,
-    "B8": 119,
-    "F#2": 42,
-    "F#3": 54,
-    "F#4": 66,
-    "F#5": 78,
-    "F#6": 90,
-    "F#7": 102,
-    "F#8": 114,
-    "F#9": 126,
-    "E9": 124,
-    "E8": 112,
-    "E5": 76,
-    "E4": 64,
-    "E7": 100,
-    "E6": 88,
-    "E3": 52,
-    "E2": 40,
-    "A#3": 58,
-    "A#2": 46,
-    "A#1": 34,
-    "pause": 0,
-    "A#7": 106,
-    "A#6": 94,
-    "A#5": 82,
-    "A#4": 70,
-    "A#8": 118,
-    "C9": 120,
-    "C8": 108,
-    "C3": 48,
-    "C2": 36,
-    "C7": 96,
-    "C6": 84,
-    "C5": 72,
-    "C4": 60,
-    "R": 0,
-    "F2": 41,
-    "F3": 53,
-    "F4": 65,
-    "F5": 77,
-    "F6": 89,
-    "F7": 101,
-    "F8": 113,
-    "F9": 125,
-    "A1": 33,
-    "A3": 57,
-    "A2": 45,
-    "A5": 81,
-    "A4": 69,
-    "D#8": 111,
-    "A6": 93,
-    "D#6": 87,
-    "D#7": 99,
-    "D#4": 63,
-    "D#5": 75,
-    "D#2": 39,
-    "D#3": 51,
-    "C#9": 121,
-    "C#8": 109,
-    "C#5": 73,
-    "C#4": 61,
-    "C#7": 97,
-    "C#6": 85,
-    "C#3": 49,
-    "C#2": 37,
-    "D8": 110,
-    "D9": 122,
-    "D6": 86,
-    "D7": 98,
-    "D4": 62,
-    "D5": 74,
-    "D2": 38,
-    "D3": 50
-}
+class MidiNote(Enum):
+    REST = 0
+    PAUSE = 0
+    R = 0
+    G1 = 31
+    GS1 = 32
+    A1 = 33
+    AS1 = 34
+    B1 = 35
+    C2 = 36
+    CS2 = 37
+    D2 = 38
+    DS2 = 39
+    E2 = 40
+    F2 = 41
+    FS2 = 42
+    G2 = 43
+    GS2 = 44
+    A2 = 45
+    AS2 = 46
+    B2 = 47
+    C3 = 48
+    CS3 = 49
+    D3 = 50
+    DS3 = 51
+    E3 = 52
+    F3 = 53
+    FS3 = 54
+    G3 = 55
+    GS3 = 56
+    A3 = 57
+    AS3 = 58
+    B3 = 59
+    C4 = 60
+    CS4 = 61
+    D4 = 62
+    DS4 = 63
+    E4 = 64
+    F4 = 65
+    FS4 = 66
+    G4 = 67
+    GS4 = 68
+    A4 = 69
+    AS4 = 70
+    B4 = 71
+    C5 = 72
+    CS5 = 73
+    D5 = 74
+    DS5 = 75
+    E5 = 76
+    F5 = 77
+    FS5 = 78
+    G5 = 79
+    GS5 = 80
+    A5 = 81
+    AS5 = 82
+    B5 = 83
+    C6 = 84
+    CS6 = 85
+    D6 = 86
+    DS6 = 87
+    E6 = 88
+    F6 = 89
+    FS6 = 90
+    G6 = 91
+    GS6 = 92
+    A6 = 93
+    AS6 = 94
+    B6 = 95
+    C7 = 96
+    CS7 = 97
+    D7 = 98
+    DS7 = 99
+    E7 = 100
+    F7 = 101
+    FS7 = 102
+    G7 = 103
+    GS7 = 104
+    A7 = 105
+    AS7 = 106
+    B7 = 107
+    C8 = 108
+    CS8 = 109
+    D8 = 110
+    DS8 = 111
+    E8 = 112
+    F8 = 113
+    FS8 = 114
+    G8 = 115
+    GS8 = 116
+    A8 = 117
+    AS8 = 118
+    B8 = 119
+    C9 = 120
+    CS9 = 121
+    D9 = 122
+    DS9 = 123
+    E9 = 124
+    F9 = 125
+    FS9 = 126
+    G9 = 127
 
-REMOTE_OPCODES = {
-    0: "none",
-    129: "left",
-    130: "forward",
-    131: "right",
-    132: "spot",
-    133: "max",
-    134: "small",
-    135: "medium",
-    136: "clean",
-    137: "pause",
-    138: "power",
-    139: "arc-left",
-    140: "arc-right",
-    141: "drive-stop",
-    142: "send-all",
-    143: "seek-dock",
-    160: "reserved",
-    161: "force-field",
-    162: "virtual-wall",
-    164: "green-buoy",
-    165: "green-buoy-and-force-field",
-    168: "red-buoy",
-    169: "red-buoy-and-force-field",
-    172: "red-buoy-and-green-buoy",
-    173: "red-buoy-and-green-buoy-and-force-field",
-    240: "reserved",
-    242: "force-field",
-    244: "green-buoy",
-    246: "green-buoy-and-force-field",
-    248: "red-buoy",
-    250: "red-buoy-and-force-field",
-    252: "red-buoy-and-green-buoy",
-    254: "red-buoy-and-green-buoy-and-force-field",
-    255: "none"
-}
+
+class RemoteOpcode(Enum):
+    NONE = 0
+    LEFT = 129
+    FORWARD = 130
+    RIGHT = 131
+    SPOT = 132
+    MAX = 133
+    SMALL = 134
+    MEDIUM = 135
+    CLEAN = 136
+    PAUSE = 137
+    POWER = 138
+    ARC_LEFT = 139
+    ARC_RIGHT = 140
+    DRIVE_STOP = 141
+    SEND_ALL = 142
+    SEEK_DOCK = 143
+    RESERVED_160 = 160
+    FORCE_FIELD_161 = 161
+    VIRTUAL_WALL = 162
+    GREEN_BUOY = 164
+    GREEN_BUOY_AND_FORCE_FIELD_165 = 165
+    RED_BUOY = 168
+    RED_BUOY_AND_FORCE_FIELD_169 = 169
+    RED_BUOY_AND_GREEN_BUOY = 172
+    RED_BUOY_AND_GREEN_BUOY_AND_FORCE_FIELD_173 = 173
+    RESERVED_240 = 240
+    FORCE_FIELD_242 = 242
+    GREEN_BUOY_244 = 244
+    GREEN_BUOY_AND_FORCE_FIELD_246 = 246
+    RED_BUOY_248 = 248
+    RED_BUOY_AND_FORCE_FIELD_250 = 250
+    RED_BUOY_AND_GREEN_BUOY_252 = 252
+    RED_BUOY_AND_GREEN_BUOY_AND_FORCE_FIELD_254 = 254
+    NONE_255 = 255

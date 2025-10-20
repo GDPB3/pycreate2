@@ -9,8 +9,7 @@ import struct  # there are 2 places that use this ... why?
 import time
 from pycreate2.packets import SensorPacketDecoder
 from pycreate2.createSerial import SerialCommandInterface
-from pycreate2.OI import OPCODES
-from pycreate2.OI import DRIVE
+from pycreate2.OI import DriveDirection, Opcodes
 
 
 class Create2(object):
@@ -66,21 +65,21 @@ class Create2(object):
         before sending any other commands to the OI.
         """
         # self.SCI.open()
-        self.SCI.write(OPCODES.START)
+        self.SCI.write(Opcodes.START.value)
         time.sleep(self.sleep_timer)
 
-    def getMode(self):
-        """
-        This doesn't seem to work
-        """
-        self.SCI.write(OPCODES.MODE)
-        time.sleep(0.005)
-        ans = self.SCI.read(1)
-        if len(ans) == 1:
-            byte = struct.unpack('B', ans)[0]
-        else:
-            byte = 'Error, not mode returned'
-        print('Mode: {}'.format(byte))
+    # def getMode(self):
+    #     """
+    #     This doesn't seem to work
+    #     """
+    #     self.SCI.write(Opcodes.MODE.value)
+    #     time.sleep(0.005)
+    #     ans = self.SCI.read(1)
+    #     if len(ans) == 1:
+    #         byte = struct.unpack('B', ans)[0]
+    #     else:
+    #         byte = 'Error, not mode returned'
+    #     print('Mode: {}'.format(byte))
 
     def wake(self):
         """
@@ -109,7 +108,7 @@ class Create2(object):
         ('Firmware Version:', 'bl-start\r\nSTR730\r\nbootloader id: #x47186549 82ECCFFF\r\nbootloader info rev: #xF000\r\nbootloader rev: #x0001\r\n2007-05-14-1715-L   \r')
         """
         self.clearSongMemory()
-        self.SCI.write(OPCODES.RESET)
+        self.SCI.write(Opcodes.RESET.value)
         time.sleep(1)
         ret = self.SCI.read(128)
         return ret
@@ -121,7 +120,7 @@ class Create2(object):
         working with the robot.
         """
         self.clearSongMemory()
-        self.SCI.write(OPCODES.STOP)
+        self.SCI.write(Opcodes.STOP.value)
         time.sleep(self.sleep_timer)
 
     def safe(self):
@@ -129,7 +128,7 @@ class Create2(object):
         Puts the Create 2 into safe mode. Blocks for a short (<.5 sec) amount
         of time so the bot has time to change modes.
         """
-        self.SCI.write(OPCODES.SAFE)
+        self.SCI.write(Opcodes.SAFE.value)
         time.sleep(self.sleep_timer)
         self.clearSongMemory()
 
@@ -138,7 +137,7 @@ class Create2(object):
         Puts the Create 2 into full mode. Blocks for a short (<.5 sec) amount
         of time so the bot has time to change modes.
         """
-        self.SCI.write(OPCODES.FULL)
+        self.SCI.write(Opcodes.FULL.value)
         time.sleep(self.sleep_timer)
         self.clearSongMemory()
 
@@ -150,7 +149,7 @@ class Create2(object):
         Puts the Create 2 into Passive mode. The OI can be in Safe, or
         Full mode to accept this command.
         """
-        self.SCI.write(OPCODES.POWER)
+        self.SCI.write(Opcodes.POWER.value)
         time.sleep(self.sleep_timer)
 
     # ------------------ Drive Commands ------------------
@@ -180,7 +179,7 @@ class Create2(object):
         radius = self.limit(radius, -2000, 2000)
         data = struct.unpack('4B', struct.pack(
             '>2h', velocity, radius))  # write do this?
-        self.SCI.write(OPCODES.DRIVE, data)
+        self.SCI.write(Opcodes.DRIVE.value, data)
 
     def drive_direct(self, r_vel, l_vel):
         """
@@ -190,7 +189,7 @@ class Create2(object):
         l_vel = self.limit(l_vel, -500, 500)
         data = struct.unpack('4B', struct.pack(
             '>2h', r_vel, l_vel))  # write do this?
-        self.SCI.write(OPCODES.DRIVE_DIRECT, data)
+        self.SCI.write(Opcodes.DRIVE_DIRECT.value, data)
 
     def drive_pwm(self, r_pwm, l_pwm):
         """
@@ -200,7 +199,7 @@ class Create2(object):
         l_pwm = self.limit(l_pwm, -255, 255)
         data = struct.unpack('4B', struct.pack(
             '>2h', r_pwm, l_pwm))  # write do this?
-        self.SCI.write(OPCODES.DRIVE_PWM, data)
+        self.SCI.write(Opcodes.DRIVE_PWM.value, data)
 
     # ------------------------ LED ----------------------------
 
@@ -213,7 +212,7 @@ class Create2(object):
         All leds other than power are on/off.
         """
         data = (led_bits, power_color, power_intensity)
-        self.SCI.write(OPCODES.LED, data)
+        self.SCI.write(Opcodes.LED.value, data)
 
     def digit_led_ascii(self, display_string):
         """
@@ -237,7 +236,7 @@ class Create2(object):
                 # Char was not available. Just print a blank space
                 display_list[i] = 32
 
-        self.SCI.write(OPCODES.DIGIT_LED_ASCII, tuple(display_list))
+        self.SCI.write(Opcodes.DIGIT_LED_ASCII.value, tuple(display_list))
 
     # ------------------------ Songs ----------------------------
 
@@ -273,7 +272,7 @@ class Create2(object):
 
         msg = (song_num, size//2,) + notes
         # print('>> msg:', (OPCODES.SONG,) + msg)
-        self.SCI.write(OPCODES.SONG, msg)
+        self.SCI.write(Opcodes.SONG.value, msg)
 
         self.song_list[song_num] = dt
 
@@ -297,7 +296,7 @@ class Create2(object):
             return 0
 
         # print('>> msg:', (OPCODES.PLAY, song_num,))
-        self.SCI.write(OPCODES.PLAY, (song_num,))
+        self.SCI.write(Opcodes.PLAY.value, (song_num,))
 
         return time_len
 
@@ -311,7 +310,7 @@ class Create2(object):
             packet reques now.
         """
 
-        opcode = OPCODES.SENSORS
+        opcode = Opcodes.SENSORS.value
         cmd = (100,)
         sensor_pkt_len = 80
 

@@ -7,7 +7,8 @@
 
 from struct import Struct
 from collections import namedtuple
-from .OI import WHEEL_OVERCURRENT, BUMPS_WHEEL_DROPS, BUTTONS, CHARGE_SOURCE, LIGHT_BUMPER, STASIS
+from .OI import WheelOvercurrent, BumpsWheelDrops, Buttons as ButtonCodes, ChargeSource, LightBumper as LightBumperCodes, Stasis as StasisCodes
+
 
 # build some packet decoders:
 #   use: unpack_bool_byte(data)[0] -> returns tuple, but grab 0 entry
@@ -19,11 +20,15 @@ unpack_unsigned_short = Struct('>H').unpack   # 2 unsigned bytes (ushort)
 
 
 # Some data is bit mapped. These namedtuples break those out for easier use
-BumpsAndWheelDrop = namedtuple('BumpsAndWheelDrop', 'bump_left bump_right wheeldrop_left wheeldrop_right')
-WheelOvercurrents = namedtuple('WheelOvercurrents', 'side_brush_overcurrent main_brush_overcurrent right_wheel_overcurrent left_wheel_overcurrent')
-Buttons = namedtuple('Buttons', 'clean spot dock minute hour day schedule clock')
+BumpsAndWheelDrop = namedtuple(
+    'BumpsAndWheelDrop', 'bump_left bump_right wheeldrop_left wheeldrop_right')
+WheelOvercurrents = namedtuple(
+    'WheelOvercurrents', 'side_brush_overcurrent main_brush_overcurrent right_wheel_overcurrent left_wheel_overcurrent')
+Buttons = namedtuple(
+    'Buttons', 'clean spot dock minute hour day schedule clock')
 ChargingSources = namedtuple('ChargingSources', 'internal_charger home_base')
-LightBumper = namedtuple('LightBumper', 'left front_left center_left center_right front_right right')
+LightBumper = namedtuple(
+    'LightBumper', 'left front_left center_left center_right front_right right')
 Stasis = namedtuple('Stasis', 'toggling disabled')
 
 # This is the big kahuna ... packet 100, everything
@@ -88,7 +93,8 @@ def SensorPacketDecoder(data):
     """
 
     if len(data) != 80:
-        raise Exception('Sensor data not 80 bytes long, it is: {}'.format(len(data)))
+        raise Exception(
+            'Sensor data not 80 bytes long, it is: {}'.format(len(data)))
 
     # packets 32, 33 or data bits 36, 37, 38 - unused
     # packet 16 or data bit 9 - unused
@@ -96,51 +102,51 @@ def SensorPacketDecoder(data):
     # self.bumps_and_wheel_drops = BumpsAndWheelDrop(data[0:1])
     d = unpack_unsigned_byte(data[0:1])[0]
     bumps_wheeldrops = BumpsAndWheelDrop(
-        bool(d & BUMPS_WHEEL_DROPS.BUMP_RIGHT),
-        bool(d & BUMPS_WHEEL_DROPS.BUMP_LEFT),
-        bool(d & BUMPS_WHEEL_DROPS.WHEEL_DROP_RIGHT),
-        bool(d & BUMPS_WHEEL_DROPS.WHEEL_DROP_LEFT)
+        bool(d & BumpsWheelDrops.BUMP_RIGHT.value),
+        bool(d & BumpsWheelDrops.BUMP_LEFT.value),
+        bool(d & BumpsWheelDrops.WHEEL_DROP_RIGHT.value),
+        bool(d & BumpsWheelDrops.WHEEL_DROP_LEFT.value)
     )
     d = unpack_unsigned_byte(data[7:8])[0]
     overcurrents = WheelOvercurrents(
-        bool(d & WHEEL_OVERCURRENT.SIDE_BRUSH),
-        bool(d & WHEEL_OVERCURRENT.MAIN_BRUSH),
-        bool(d & WHEEL_OVERCURRENT.RIGHT_WHEEL),
-        bool(d & WHEEL_OVERCURRENT.LEFT_WHEEL)
+        bool(d & WheelOvercurrent.SIDE_BRUSH.value),
+        bool(d & WheelOvercurrent.MAIN_BRUSH.value),
+        bool(d & WheelOvercurrent.RIGHT_WHEEL.value),
+        bool(d & WheelOvercurrent.LEFT_WHEEL.value)
     )
     # self.buttons = Buttons(data[11:12])
     d = unpack_unsigned_byte(data[11:12])[0]
     buttons = Buttons(
-        bool(d & BUTTONS.CLEAN),
-        bool(d & BUTTONS.SPOT),
-        bool(d & BUTTONS.DOCK),
-        bool(d & BUTTONS.MINUTE),
-        bool(d & BUTTONS.HOUR),
-        bool(d & BUTTONS.DAY),
-        bool(d & BUTTONS.SCHEDULE),
-        bool(d & BUTTONS.CLOCK)
+        bool(d & ButtonCodes.CLEAN.value),
+        bool(d & ButtonCodes.SPOT.value),
+        bool(d & ButtonCodes.DOCK.value),
+        bool(d & ButtonCodes.MINUTE.value),
+        bool(d & ButtonCodes.HOUR.value),
+        bool(d & ButtonCodes.DAY.value),
+        bool(d & ButtonCodes.SCHEDULE.value),
+        bool(d & ButtonCodes.CLOCK.value)
     )
     # self.charging_sources = ChargingSources(data[39:40])
     d = unpack_unsigned_byte(data[39:40])[0]
     charging_sources = ChargingSources(
-        bool(d & CHARGE_SOURCE.INTERNAL),
-        bool(d & CHARGE_SOURCE.HOME_BASE)
+        bool(d & ChargeSource.INTERNAL.value),
+        bool(d & ChargeSource.HOME_BASE.value)
     )
     # self.light_bumper = LightBumper(data[56:57])
     d = unpack_unsigned_byte(data[56:57])[0]
     light_bumper = LightBumper(
-        bool(d & LIGHT_BUMPER.LEFT),
-        bool(d & LIGHT_BUMPER.FRONT_LEFT),
-        bool(d & LIGHT_BUMPER.CENTER_LEFT),
-        bool(d & LIGHT_BUMPER.CENTER_RIGHT),
-        bool(d & LIGHT_BUMPER.FRONT_RIGHT),
-        bool(d & LIGHT_BUMPER.RIGHT)
+        bool(d & LightBumperCodes.LEFT.value),
+        bool(d & LightBumperCodes.FRONT_LEFT.value),
+        bool(d & LightBumperCodes.CENTER_LEFT.value),
+        bool(d & LightBumperCodes.CENTER_RIGHT.value),
+        bool(d & LightBumperCodes.FRONT_RIGHT.value),
+        bool(d & LightBumperCodes.RIGHT.value)
     )
     # self.stasis = Stasis(data[79:80])
     d = unpack_unsigned_byte(data[79:80])[0]
     stasis = Stasis(
-        bool(d & STASIS.TOGGLING),
-        bool(d & STASIS.DISABLED)
+        bool(d & StasisCodes.TOGGLING.value),
+        bool(d & StasisCodes.DISABLED.value)
     )
 
     sensors = Sensors(
@@ -161,7 +167,8 @@ def SensorPacketDecoder(data):
         unpack_unsigned_byte(data[16:17])[0],   # charge state
         unpack_unsigned_short(data[17:19])[0],  # voltage
         unpack_short(data[19:21])[0],           # current
-        unpack_byte(data[21:22])[0],            # temperature in C, use CtoF if needed
+        # temperature in C, use CtoF if needed
+        unpack_byte(data[21:22])[0],
         unpack_unsigned_short(data[22:24])[0],  # battery charge
         unpack_unsigned_short(data[24:26])[0],  # battery capacity
         unpack_unsigned_short(data[26:28])[0],  # wall
