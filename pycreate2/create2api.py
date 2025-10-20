@@ -157,13 +157,30 @@ class Create2(object):
 
     def drive_stop(self):
         # self.drive_straight(0)
-        self.drive_direct(0,0)
-        time.sleep(self.sleep_timer)  # wait just a little for the robot to stop
+        self.drive_direct(0, 0)
+        # wait just a little for the robot to stop
+        time.sleep(self.sleep_timer)
 
     def limit(self, val, low, hi):
         val = val if val < hi else hi
         val = val if val > low else low
         return val
+
+    def drive_radius(self, velocity: int, radius: int):
+        """
+        Drive with a specified radius: velocity in mm/sec, radius in mm
+
+        :param velocity: -500 to 500 mm/sec
+        :type velocity: int
+
+        :param radius: -2000 to 2000 mm, special cases: -1 = turn in place clockwise,
+                       +1 = turn in place counter-clockwise, 0 = drive straight
+        """
+        velocity = self.limit(velocity, -500, 500)
+        radius = self.limit(radius, -2000, 2000)
+        data = struct.unpack('4B', struct.pack(
+            '>2h', velocity, radius))  # write do this?
+        self.SCI.write(OPCODES.DRIVE, data)
 
     def drive_direct(self, r_vel, l_vel):
         """
@@ -171,7 +188,8 @@ class Create2(object):
         """
         r_vel = self.limit(r_vel, -500, 500)
         l_vel = self.limit(l_vel, -500, 500)
-        data = struct.unpack('4B', struct.pack('>2h', r_vel, l_vel))  # write do this?
+        data = struct.unpack('4B', struct.pack(
+            '>2h', r_vel, l_vel))  # write do this?
         self.SCI.write(OPCODES.DRIVE_DIRECT, data)
 
     def drive_pwm(self, r_pwm, l_pwm):
@@ -180,7 +198,8 @@ class Create2(object):
         """
         r_pwm = self.limit(r_pwm, -255, 255)
         l_pwm = self.limit(l_pwm, -255, 255)
-        data = struct.unpack('4B', struct.pack('>2h', r_pwm, l_pwm))  # write do this?
+        data = struct.unpack('4B', struct.pack(
+            '>2h', r_pwm, l_pwm))  # write do this?
         self.SCI.write(OPCODES.DRIVE_PWM, data)
 
     # ------------------------ LED ----------------------------
@@ -224,8 +243,8 @@ class Create2(object):
 
     def clearSongMemory(self):
         for sn in range(4):
-            song = [70,0]
-            self.createSong(sn,song)
+            song = [70, 0]
+            self.createSong(sn, song)
             self.playSong(sn)
         time.sleep(0.1)
 
@@ -239,7 +258,8 @@ class Create2(object):
         """
         size = len(notes)
         if (2 > size > 32) or (size % 2 != 0):
-            raise Exception('Songs must be between 1-16 notes and have a duration for each note')
+            raise Exception(
+                'Songs must be between 1-16 notes and have a duration for each note')
         if 0 > song_num > 3:
             raise Exception('Song number must be 0 - 3')
 
@@ -280,7 +300,6 @@ class Create2(object):
         self.SCI.write(OPCODES.PLAY, (song_num,))
 
         return time_len
-
 
     # ------------------------ Sensors ----------------------------
 
