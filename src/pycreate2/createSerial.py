@@ -22,7 +22,17 @@ class SerialCommandInterface(object):
         Creates the serial port, but doesn't open it yet. Call open(port) to open
         it.
         """
-        self.ser = serial.Serial()
+        self.ser = serial.Serial(
+            baudrate=115200,
+            bytesize=serial.EIGHTBITS,
+            parity=serial.PARITY_NONE,
+            stopbits=serial.STOPBITS_ONE,
+
+            # Flow control
+            xonxoff=False,
+            rtscts=False,
+            dsrdtr=False
+        )
 
     def __del__(self):
         """
@@ -37,10 +47,12 @@ class SerialCommandInterface(object):
         Opens a serial port to the create.
 
         :param port: the serial port to open, ie, '/dev/ttyUSB0'
-        :param baud: default is 115200, but can be changed to a lower rate via the create api
+        :param baud: default is 115200, can be set to 19200 doing nefarious things
         :param timeout: serial timeout in seconds
         """
         self.ser.port = port
+
+        assert baud in [115200, 19200], 'baudrate must be 115200 or 19200'
         self.ser.baudrate = baud
         self.ser.timeout = timeout
 
