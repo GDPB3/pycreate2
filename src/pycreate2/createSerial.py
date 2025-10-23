@@ -84,7 +84,7 @@ class SerialCommandInterface(object):
         msg = (opcode,) + data if data else (opcode,)
         self.ser.write(struct.pack('B' * len(msg), *msg))
 
-    def read(self, num_bytes: int) -> bytes:
+    def read(self, num_bytes: int, throw_on_timeout: bool = True) -> bytes:
         """
         Read a string of 'num_bytes' bytes from the robot.
 
@@ -97,7 +97,13 @@ class SerialCommandInterface(object):
         read_bytes = 0
         data = b''
         while read_bytes < num_bytes:
-            new_data = self.ser.read(num_bytes - read_bytes)
+            to_read = num_bytes - read_bytes
+            new_data = self.ser.read(to_read)
+
+            if throw_on_timeout and len(new_data) == 0:
+                raise TimeoutError('Timeout error: read {} of {} bytes'.format(
+                    read_bytes, num_bytes))
+
             data += self.filter_begin(new_data)
             read_bytes = len(data)
 
