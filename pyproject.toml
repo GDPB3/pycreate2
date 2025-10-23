@@ -17,10 +17,13 @@ authors = [
     { name = "walchko", email = "walchko@users.noreply.github.com" },
     { name = "luengor", email = "aluengor0001@gmail.com" }
 ]
-requires-python = ">=3.8"
+requires-python = ">=3.13"
 dependencies = [
-    "serial>=0.0.97",
+    "pyserial>=3.5",
 ]
+# dependencies = [
+#     "serial>=0.0.97",
+# ]
 
 [project.scripts]
 create_monitor = "pycreate2.scripts.create_monitor:main"
