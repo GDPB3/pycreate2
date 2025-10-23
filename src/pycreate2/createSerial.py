@@ -103,6 +103,19 @@ class SerialCommandInterface(object):
 
         return data
 
+    def read_until(self, delim: bytes = b'\n\r') -> bytes:
+        """
+        Reads from the serial port until the delimiter is found.
+
+        :param delim: the byte sequence to read until
+        :type delim: bytes
+        """
+        if not self.ser.is_open:
+            raise Exception('You must open the serial port first')
+
+        data = self.ser.read_until(delim)
+        return data
+
     def close(self):
         """
         Closes the serial connection.

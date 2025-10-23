@@ -110,7 +110,12 @@ class Create2(object):
         self.clearSongMemory()
         self.SCI.write(Opcodes.RESET.value)
         time.sleep(1)
-        ret = self.SCI.read(128)
+
+        ret = b''
+        for _ in range(7):
+            ret += self.SCI.read_until(b'\r\n')
+            time.sleep(0.5)
+
         return ret
 
     def stop(self):
