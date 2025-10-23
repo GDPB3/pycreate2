@@ -7,6 +7,7 @@
 
 import serial
 import struct
+import sys
 
 
 class SerialCommandInterface(object):
@@ -93,7 +94,12 @@ class SerialCommandInterface(object):
         if not self.ser.is_open:
             raise Exception('You must open the serial port first')
 
-        data = self.ser.read(num_bytes)
+        read_bytes = 0
+        data = b''
+        while read_bytes < num_bytes:
+            new_data = self.ser.read(num_bytes - read_bytes)
+            data += self.filter_begin(new_data)
+            read_bytes = len(data)
 
         return data
 
@@ -104,3 +110,15 @@ class SerialCommandInterface(object):
         if self.ser.is_open:
             print('Closing port {} @ {}'.format(self.ser.port, self.ser.baudrate))
             self.ser.close()
+
+    @staticmethod
+    def filter_begin(msg: bytes) -> bytes:
+        begin = b'    Flash CRC'
+        if msg.startswith(begin):
+            end = msg.find(b'\n\r', len(begin))
+
+            assert end != -1, 'Could not find end of flash message'
+            print("Filtered CRC: ",
+                  msg[:end+2].decode('utf-8'), file=sys.stderr)
+            return msg[end+2:]
+        return msg
