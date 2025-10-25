@@ -132,12 +132,24 @@ class SerialCommandInterface(object):
 
     @staticmethod
     def filter_begin(msg: bytes) -> bytes:
-        begin = b'    Flash CRC'
-        if msg.startswith(begin):
-            end = msg.find(b'\n\r', len(begin))
 
-            assert end != -1, 'Could not find end of flash message'
-            print("Filtered CRC: ",
-                  msg[:end+2].decode('utf-8'), file=sys.stderr)
-            return msg[end+2:]
+        flash_msg = msg.find(b'(0x0)\n\r')
+        wakeup_msg = msg.find(b'conds\r\n')
+
+        found = max(flash_msg, wakeup_msg)
+
+        if found == -1:
+            return msg
+
+        filtered, msg = msg[:found + 7], msg[found + 7:]
+        print("Filtered string: ", filtered.decode(
+            'utf-8')[:-2], file=sys.stderr)
         return msg
+
+
+if __name__ == '__main__':
+    msg = b'Hello World!(0x0)\n\r123'
+    print(SerialCommandInterface.filter_begin(msg))
+
+    msg = b'Hello World!conds\r\n123'
+    print(SerialCommandInterface.filter_begin(msg))

@@ -6,7 +6,7 @@
 
 [project]
 name = "pycreate2"
-version = "0.8.4"
+version = "0.8.5"
 description = "A library to control iRobot Create 2 with python"
 readme = "readme.md"
 homepage = "https://pypi.org/project/pycreate2/"
@@ -21,9 +21,6 @@ requires-python = ">=3.13"
 dependencies = [
     "pyserial>=3.5",
 ]
-# dependencies = [
-#     "serial>=0.0.97",
-# ]
 
 [project.scripts]
 create_monitor = "pycreate2.scripts.create_monitor:main"
