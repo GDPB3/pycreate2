@@ -31,11 +31,10 @@ class SerialCommandInterface(object):
             bytesize=serial.EIGHTBITS,
             parity=serial.PARITY_NONE,
             stopbits=serial.STOPBITS_ONE,
-
             # Flow control
             xonxoff=False,
             rtscts=False,
-            dsrdtr=False
+            dsrdtr=False,
         )
 
     def __del__(self):
@@ -56,9 +55,13 @@ class SerialCommandInterface(object):
         """
         self.ser.port = port
 
-        assert baud in [115200, 19200], 'baudrate must be 115200 or 19200'
+        assert baud in [115200, 19200], "baudrate must be 115200 or 19200"
         self.ser.baudrate = baud
         self.ser.timeout = timeout
+
+        # if we get data on open, it's a startup message.
+        # read it and return it to be parsed/handled by caller
+        startup_msg = self.ser.read(2048)
 
         if self.ser.is_open:
             self.ser.close()
@@ -66,7 +69,9 @@ class SerialCommandInterface(object):
         if self.ser.is_open:
             logger.info("Create opened serial: {}".format(self.ser))
         else:
-            raise Exception('Failed to open {} at {}'.format(port, baud))
+            raise Exception("Failed to open {} at {}".format(port, baud))
+
+        return startup_msg
 
     def write(self, opcode: int, data: tuple | None = None):
         """
@@ -80,8 +85,8 @@ class SerialCommandInterface(object):
         :type data: tuple | None
         """
         msg = (opcode,) + data if data else (opcode,)
-        self.ser.write(struct.pack('B' * len(msg), *msg))
-        logger.debug('Wrote: {}'.format(msg))
+        self.ser.write(struct.pack("B" * len(msg), *msg))
+        logger.debug("Wrote: {}".format(msg))
 
     def read(self, num_bytes: int, throw_on_timeout: bool = True) -> bytes:
         """
@@ -91,25 +96,26 @@ class SerialCommandInterface(object):
         :type num_bytes: int
         """
         if not self.ser.is_open:
-            raise Exception('You must open the serial port first')
+            raise Exception("You must open the serial port first")
 
         read_bytes = 0
-        data = b''
+        data = b""
         while read_bytes < num_bytes:
             to_read = num_bytes - read_bytes
             new_data = self.ser.read(to_read)
 
             if throw_on_timeout and len(new_data) == 0:
-                raise TimeoutError('Timeout error: read {} of {} bytes'.format(
-                    read_bytes, num_bytes))
+                raise TimeoutError(
+                    "Timeout error: read {} of {} bytes".format(read_bytes, num_bytes)
+                )
 
             data += self.filter_begin(new_data)
             read_bytes = len(data)
 
-        logger.debug('Read: {}'.format(data))
+        logger.debug("Read: {}".format(data))
         return data
 
-    def read_until(self, delim: bytes = b'\n\r') -> bytes:
+    def read_until(self, delim: bytes = b"\n\r") -> bytes:
         """
         Reads from the serial port until the delimiter is found.
 
@@ -117,7 +123,7 @@ class SerialCommandInterface(object):
         :type delim: bytes
         """
         if not self.ser.is_open:
-            raise Exception('You must open the serial port first')
+            raise Exception("You must open the serial port first")
 
         data = self.ser.read_until(delim)
         return data
@@ -127,34 +133,33 @@ class SerialCommandInterface(object):
         Closes the serial connection.
         """
         if self.ser.is_open:
-            logger.info(
-                'Closing port {} @ {}'.format(self.ser.port, self.ser.baudrate))
+            logger.info("Closing port {} @ {}".format(self.ser.port, self.ser.baudrate))
             self.ser.close()
         else:
             logger.warning("Trying to close a serial port that isn't open")
 
     @staticmethod
     def filter_begin(msg: bytes) -> bytes:
-
-        flash_msg = msg.find(b'(0x0)\n\r')
-        wakeup_msg = msg.find(b'conds\r\n')
+        flash_msg = msg.find(b"(0x0)\n\r")
+        wakeup_msg = msg.find(b"conds\r\n")
 
         found = max(flash_msg, wakeup_msg)
 
         if found == -1:
             return msg
 
-        filtered, msg = msg[:found + 7], msg[found + 7:]
-        logger.info("Filtered out startup message: {}".format(
-            filtered.decode('utf-8')[:-2]))
+        filtered, msg = msg[: found + 7], msg[found + 7 :]
+        logger.info(
+            "Filtered out startup message: {}".format(filtered.decode("utf-8")[:-2])
+        )
         return msg
 
 
-if __name__ == '__main__':
-    logging.basicConfig(filemode='create_serial.log', level=logging.DEBUG)
+if __name__ == "__main__":
+    logging.basicConfig(filemode="create_serial.log", level=logging.DEBUG)
 
-    msg = b'Hello World!(0x0)\n\r123'
+    msg = b"Hello World!(0x0)\n\r123"
     print(SerialCommandInterface.filter_begin(msg))
 
-    msg = b'Hello World!conds\r\n123'
+    msg = b"Hello World!conds\r\n123"
     print(SerialCommandInterface.filter_begin(msg))

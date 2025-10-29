@@ -12,6 +12,10 @@ from typing import Sequence
 from pycreate2.packets import SensorPacketDecoder
 from pycreate2.createSerial import SerialCommandInterface
 from pycreate2.OI import DriveDirection, Opcodes
+import pycreate2.logger  # just to set up logging
+import logging
+
+logger = logging.getLogger("create2api")
 
 
 class Create2(object):
@@ -30,13 +34,23 @@ class Create2(object):
         :type baud: int
         """
         self.SCI = SerialCommandInterface()
-        self.SCI.open(port, baud)
+        startup_msg = self.SCI.open(port, baud)
+        if len(startup_msg) != 0:
+            # we just woke up, so we get lots of info.
+            startup_msg = startup_msg.split(b"\r\n")
+            self.manufacturing_date = startup_msg[3]
+            self.version = startup_msg[4]
+            logger.info(
+                "Got a wakeup message. Version: {}, Manufacturing Date: {}".format(
+                    self.version, self.manufacturing_date
+                )
+            )
+
         self.sleep_timer = 0.5
         self.song_list = {}
 
     @classmethod
-    async def create(cls, port: str = "/dev/ttyUSB0", baud: int = 115200):
-        ...
+    async def create(cls, port: str = "/dev/ttyUSB0", baud: int = 115200): ...
 
     def __del__(self):
         """Destructor, cleans up when class goes out of scope"""
@@ -46,7 +60,7 @@ class Create2(object):
 
         # turn off LEDs
         self.led()
-        self.digit_led_ascii('    ')
+        self.digit_led_ascii("    ")
         time.sleep(0.1)
 
         # close it down
@@ -118,9 +132,9 @@ class Create2(object):
         self.SCI.write(Opcodes.RESET.value)
         time.sleep(1)
 
-        ret = b''
+        ret = b""
         for _ in range(7):
-            ret += self.SCI.read_until(b'\r\n')
+            ret += self.SCI.read_until(b"\r\n")
             time.sleep(0.5)
 
         return ret
@@ -189,8 +203,9 @@ class Create2(object):
         """
         velocity = self.limit(velocity, -500, 500)
         radius = self.limit(radius, -2000, 2000)
-        data = struct.unpack('4B', struct.pack(
-            '>2h', velocity, radius))  # write do this?
+        data = struct.unpack(
+            "4B", struct.pack(">2h", velocity, radius)
+        )  # write do this?
         self.SCI.write(Opcodes.DRIVE.value, data)
 
     def drive_direct(self, r_vel, l_vel):
@@ -199,8 +214,7 @@ class Create2(object):
         """
         r_vel = self.limit(r_vel, -500, 500)
         l_vel = self.limit(l_vel, -500, 500)
-        data = struct.unpack('4B', struct.pack(
-            '>2h', r_vel, l_vel))  # write do this?
+        data = struct.unpack("4B", struct.pack(">2h", r_vel, l_vel))  # write do this?
         self.SCI.write(Opcodes.DRIVE_DIRECT.value, data)
 
     def drive_pwm(self, r_pwm, l_pwm):
@@ -209,8 +223,7 @@ class Create2(object):
         """
         r_pwm = self.limit(r_pwm, -255, 255)
         l_pwm = self.limit(l_pwm, -255, 255)
-        data = struct.unpack('4B', struct.pack(
-            '>2h', r_pwm, l_pwm))  # write do this?
+        data = struct.unpack("4B", struct.pack(">2h", r_pwm, l_pwm))  # write do this?
         self.SCI.write(Opcodes.DRIVE_PWM.value, data)
 
     # ------------------------ LED ----------------------------
@@ -239,7 +252,7 @@ class Create2(object):
                 Create 2's display. C'est la vie. Any Create non-printable character
                 will be replaced with a space ' '.
         """
-        display_list = [32]*4
+        display_list = [32] * 4
         for i, c in enumerate(display_string[:4]):
             val = ord(c.upper())
             if 32 <= val <= 126:
@@ -270,19 +283,23 @@ class Create2(object):
         size = len(notes)
         if (2 > size > 32) or (size % 2 != 0):
             raise Exception(
-                'Songs must be between 1-16 notes and have a duration for each note')
+                "Songs must be between 1-16 notes and have a duration for each note"
+            )
         if 0 > song_num > 3:
-            raise Exception('Song number must be 0 - 3')
+            raise Exception("Song number must be 0 - 3")
 
         if not isinstance(notes, tuple):
             notes = tuple(notes)
 
         dt = 0
-        for i in range(len(notes)//2):
-            dt += notes[2*i+1]
-        dt = dt/64
+        for i in range(len(notes) // 2):
+            dt += notes[2 * i + 1]
+        dt = dt / 64
 
-        msg = (song_num, size//2,) + notes
+        msg = (
+            song_num,
+            size // 2,
+        ) + notes
         # print('>> msg:', (OPCODES.SONG,) + msg)
         self.SCI.write(Opcodes.SONG.value, msg)
 
@@ -337,7 +354,8 @@ class Create2(object):
                 packet_list.append(pkt)
             else:
                 raise Exception(
-                    f"Sensor list must contain strings or integers, got {type(s)}")
+                    f"Sensor list must contain strings or integers, got {type(s)}"
+                )
 
         # Request the packets
         msg = [len(packet_list)] + [pkt.id for pkt in packet_list]
@@ -352,7 +370,7 @@ class Create2(object):
         sensor_data: dict[str, int] = {}
         index = 0
         for pkt in packet_list:
-            raw_bytes = packet_byte_data[index:index+pkt.size]
+            raw_bytes = packet_byte_data[index : index + pkt.size]
             sensor_data[pkt.name] = pkt.unpack(raw_bytes)
             index += pkt.size
 
@@ -387,7 +405,7 @@ class Create2(object):
         sensor_data: dict[str, int] = {}
         index = 0
         for pkt in sensor_list:
-            raw_bytes = group_data[index:index+pkt.size]
+            raw_bytes = group_data[index : index + pkt.size]
             sensor_data[pkt.name] = pkt.unpack(raw_bytes)
             index += pkt.size
 
