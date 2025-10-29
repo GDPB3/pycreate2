@@ -14,7 +14,7 @@ def prettyPrint(sensors):
     print('-'*70)
     print('{:>40} | {:<5}'.format('Sensor', 'Value'))
     print('-'*70)
-    for k, v in sensors._asdict().items():
+    for k, v in sensors.items():
         print(f"{k}: {v}")
 
 
@@ -31,7 +31,7 @@ if __name__ == "__main__":
 
     try:
         while True:
-            sensors = bot.get_sensors()
+            sensors = bot.get_sensor_group(100)
             if sensors:
                 prettyPrint(sensors)
             else:

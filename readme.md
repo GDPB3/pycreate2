@@ -73,7 +73,7 @@ time.sleep(2)
 bot.drive_stop()
 
 # query some sensors
-sensors = bot.get_sensors()  # returns all data
+sensors = bot.get_sensor_group(100)  # returns all data
 print(sensors.light_bumper_left)
 
 # Close the connection
@@ -111,7 +111,7 @@ Sensor data is returned as a `namedtuple` from `collections`. The
 information can be accessed as either:
 
 ```python
-sensors = bot.get_sensors()
+sensors = bot.get_sensor_group(100)
 sensors.wall == sensors[1]  # True
 ```
 
