@@ -6,8 +6,9 @@ import logging
 
 logger = logging.getLogger("create2sensors")
 
+
 @dataclass
-class SensorPacket:
+class Sensor:
     id: int
     size: int
     value_range: tuple[int, int]
@@ -52,12 +53,13 @@ class SensorPacket:
         unpacked = struct.unpack(fmt, data)[0]
 
         if (not (self.value_range[0] <= unpacked <= self.value_range[1])):
-            logger.warning(f"Unpacked value {unpacked} out of range {self.value_range}")
+            logger.warning(
+                f"Unpacked value {unpacked} out of range {self.value_range}")
 
         return unpacked
 
 
-class PacketNames:
+class SensorNames:
     BUMPS_WHEELDROPS = "Bumps Wheeldrops"
     WALL = "Wall"
     CLIFF_LEFT = "Cliff Left"
@@ -112,92 +114,92 @@ class PacketNames:
     STASIS = "Stasis"
 
 
-PACKETS = {
+SENSORS = {
     # Block 0, 1, 6, 100 begin
-    PacketNames.BUMPS_WHEELDROPS: SensorPacket(7, 1, (0, 15), PacketNames.BUMPS_WHEELDROPS, [0, 1, 6, 100]),
-    PacketNames.WALL: SensorPacket(8, 1, (0, 1), PacketNames.WALL, [0, 1, 6, 100]),
-    PacketNames.CLIFF_LEFT: SensorPacket(9, 1, (0, 1), PacketNames.CLIFF_LEFT, [0, 1, 6, 100]),
-    PacketNames.CLIFF_FRONT_LEFT: SensorPacket(10, 1, (0, 1), PacketNames.CLIFF_FRONT_LEFT, [0, 1, 6, 100]),
-    PacketNames.CLIFF_FRONT_RIGHT: SensorPacket(11, 1, (0, 1), PacketNames.CLIFF_FRONT_RIGHT, [0, 1, 6, 100]),
-    PacketNames.CLIFF_RIGHT: SensorPacket(12, 1, (0, 1), PacketNames.CLIFF_RIGHT, [0, 1, 6, 100]),
-    PacketNames.VIRTUAL_WALL: SensorPacket(13, 1, (0, 1), PacketNames.VIRTUAL_WALL, [0, 1, 6, 100]),
-    PacketNames.OVERCURRENTS: SensorPacket(14, 1, (0, 29), PacketNames.OVERCURRENTS, [0, 1, 6, 100]),
-    PacketNames.DIRT_DETECT: SensorPacket(15, 1, (0, 255), PacketNames.DIRT_DETECT, [0, 1, 6, 100]),
-    PacketNames.UNUSED_1: SensorPacket(16, 1, (0, 255), PacketNames.UNUSED_1, [0, 1, 6, 100]),
+    SensorNames.BUMPS_WHEELDROPS: Sensor(7, 1, (0, 15), SensorNames.BUMPS_WHEELDROPS, [0, 1, 6, 100]),
+    SensorNames.WALL: Sensor(8, 1, (0, 1), SensorNames.WALL, [0, 1, 6, 100]),
+    SensorNames.CLIFF_LEFT: Sensor(9, 1, (0, 1), SensorNames.CLIFF_LEFT, [0, 1, 6, 100]),
+    SensorNames.CLIFF_FRONT_LEFT: Sensor(10, 1, (0, 1), SensorNames.CLIFF_FRONT_LEFT, [0, 1, 6, 100]),
+    SensorNames.CLIFF_FRONT_RIGHT: Sensor(11, 1, (0, 1), SensorNames.CLIFF_FRONT_RIGHT, [0, 1, 6, 100]),
+    SensorNames.CLIFF_RIGHT: Sensor(12, 1, (0, 1), SensorNames.CLIFF_RIGHT, [0, 1, 6, 100]),
+    SensorNames.VIRTUAL_WALL: Sensor(13, 1, (0, 1), SensorNames.VIRTUAL_WALL, [0, 1, 6, 100]),
+    SensorNames.OVERCURRENTS: Sensor(14, 1, (0, 29), SensorNames.OVERCURRENTS, [0, 1, 6, 100]),
+    SensorNames.DIRT_DETECT: Sensor(15, 1, (0, 255), SensorNames.DIRT_DETECT, [0, 1, 6, 100]),
+    SensorNames.UNUSED_1: Sensor(16, 1, (0, 255), SensorNames.UNUSED_1, [0, 1, 6, 100]),
     # Block 1 end
     # Block 2 begin
-    PacketNames.IR_OPCODE: SensorPacket(17, 1, (0, 255), PacketNames.IR_OPCODE, [0, 2, 6, 100]),
-    PacketNames.BUTTONS: SensorPacket(18, 1, (0, 255), PacketNames.BUTTONS, [0, 2, 6, 100]),
-    PacketNames.DISTANCE: SensorPacket(19, 2, (-32768, 32767), PacketNames.DISTANCE, [0, 2, 6, 100]),
-    PacketNames.ANGLE: SensorPacket(20, 2, (-32768, 32767), PacketNames.ANGLE, [0, 2, 6, 100]),
+    SensorNames.IR_OPCODE: Sensor(17, 1, (0, 255), SensorNames.IR_OPCODE, [0, 2, 6, 100]),
+    SensorNames.BUTTONS: Sensor(18, 1, (0, 255), SensorNames.BUTTONS, [0, 2, 6, 100]),
+    SensorNames.DISTANCE: Sensor(19, 2, (-32768, 32767), SensorNames.DISTANCE, [0, 2, 6, 100]),
+    SensorNames.ANGLE: Sensor(20, 2, (-32768, 32767), SensorNames.ANGLE, [0, 2, 6, 100]),
     # Block 2 end
     # Block 3 begin
-    PacketNames.CHARGING_STATE: SensorPacket(21, 1, (0, 6), PacketNames.CHARGING_STATE, [0, 3, 6, 100]),
-    PacketNames.VOLTAGE: SensorPacket(22, 2, (0, 65535), PacketNames.VOLTAGE, [0, 3, 6, 100]),
-    PacketNames.CURRENT: SensorPacket(23, 2, (-32768, 32767), PacketNames.CURRENT, [0, 3, 6, 100]),
-    PacketNames.TEMPERATURE: SensorPacket(24, 1, (-128, 127), PacketNames.TEMPERATURE, [0, 3, 6, 100]),
-    PacketNames.BATTERY_CHARGE: SensorPacket(25, 2, (0, 65535), PacketNames.BATTERY_CHARGE, [0, 3, 6, 100]),
-    PacketNames.BATTERY_CAPACITY: SensorPacket(26, 2, (0, 65535), PacketNames.BATTERY_CAPACITY, [0, 3, 6, 100]),
+    SensorNames.CHARGING_STATE: Sensor(21, 1, (0, 6), SensorNames.CHARGING_STATE, [0, 3, 6, 100]),
+    SensorNames.VOLTAGE: Sensor(22, 2, (0, 65535), SensorNames.VOLTAGE, [0, 3, 6, 100]),
+    SensorNames.CURRENT: Sensor(23, 2, (-32768, 32767), SensorNames.CURRENT, [0, 3, 6, 100]),
+    SensorNames.TEMPERATURE: Sensor(24, 1, (-128, 127), SensorNames.TEMPERATURE, [0, 3, 6, 100]),
+    SensorNames.BATTERY_CHARGE: Sensor(25, 2, (0, 65535), SensorNames.BATTERY_CHARGE, [0, 3, 6, 100]),
+    SensorNames.BATTERY_CAPACITY: Sensor(26, 2, (0, 65535), SensorNames.BATTERY_CAPACITY, [0, 3, 6, 100]),
     # Block 0, 3 end
     # Block 4 begin
-    PacketNames.WALL_SIGNAL: SensorPacket(27, 2, (0, 1023), PacketNames.WALL_SIGNAL, [4, 6, 100]),
-    PacketNames.CLIFF_LEFT_SIGNAL: SensorPacket(28, 2, (0, 4095), PacketNames.CLIFF_LEFT_SIGNAL, [4, 6, 100]),
-    PacketNames.CLIFF_FRONT_LEFT_SIGNAL: SensorPacket(29, 2, (0, 4095), PacketNames.CLIFF_FRONT_LEFT_SIGNAL, [4, 6, 100]),
-    PacketNames.CLIFF_FRONT_RIGHT_SIGNAL: SensorPacket(30, 2, (0, 4095), PacketNames.CLIFF_FRONT_RIGHT_SIGNAL, [4, 6, 100]),
-    PacketNames.CLIFF_RIGHT_SIGNAL: SensorPacket(31, 2, (0, 4095), PacketNames.CLIFF_RIGHT_SIGNAL, [4, 6, 100]),
-    PacketNames.UNUSED_2: SensorPacket(32, 1, (0, 255), PacketNames.UNUSED_2, [4, 6, 100]),
-    PacketNames.UNUSED_3: SensorPacket(33, 2, (0, 65535), PacketNames.UNUSED_3, [4, 6, 100]),
-    PacketNames.CHARGER_AVAILABLE: SensorPacket(34, 1, (0, 3), PacketNames.CHARGER_AVAILABLE, [4, 6, 100]),
+    SensorNames.WALL_SIGNAL: Sensor(27, 2, (0, 1023), SensorNames.WALL_SIGNAL, [4, 6, 100]),
+    SensorNames.CLIFF_LEFT_SIGNAL: Sensor(28, 2, (0, 4095), SensorNames.CLIFF_LEFT_SIGNAL, [4, 6, 100]),
+    SensorNames.CLIFF_FRONT_LEFT_SIGNAL: Sensor(29, 2, (0, 4095), SensorNames.CLIFF_FRONT_LEFT_SIGNAL, [4, 6, 100]),
+    SensorNames.CLIFF_FRONT_RIGHT_SIGNAL: Sensor(30, 2, (0, 4095), SensorNames.CLIFF_FRONT_RIGHT_SIGNAL, [4, 6, 100]),
+    SensorNames.CLIFF_RIGHT_SIGNAL: Sensor(31, 2, (0, 4095), SensorNames.CLIFF_RIGHT_SIGNAL, [4, 6, 100]),
+    SensorNames.UNUSED_2: Sensor(32, 1, (0, 255), SensorNames.UNUSED_2, [4, 6, 100]),
+    SensorNames.UNUSED_3: Sensor(33, 2, (0, 65535), SensorNames.UNUSED_3, [4, 6, 100]),
+    SensorNames.CHARGER_AVAILABLE: Sensor(34, 1, (0, 3), SensorNames.CHARGER_AVAILABLE, [4, 6, 100]),
     # Block 4 end
     # Block 5 begin
-    PacketNames.OPEN_INTERFACE_MODE: SensorPacket(35, 1, (0, 3), PacketNames.OPEN_INTERFACE_MODE, [5, 6, 100]),
-    PacketNames.SONG_NUMBER: SensorPacket(36, 1, (0, 4), PacketNames.SONG_NUMBER, [5, 6, 100]),
-    PacketNames.SONG_PLAYING: SensorPacket(37, 1, (0, 1), PacketNames.SONG_PLAYING, [5, 6, 100]),
-    PacketNames.OI_STREAM_NUM_PACKETS: SensorPacket(38, 1, (0, 108), PacketNames.OI_STREAM_NUM_PACKETS, [5, 6, 100]),
-    PacketNames.VELOCITY: SensorPacket(39, 2, (-500, 500), PacketNames.VELOCITY, [5, 6, 100]),
-    PacketNames.RADIUS: SensorPacket(40, 2, (-32768, 32767), PacketNames.RADIUS, [5, 6, 100]),
-    PacketNames.VELOCITY_RIGHT: SensorPacket(41, 2, (-500, 500), PacketNames.VELOCITY_RIGHT, [5, 6, 100]),
-    PacketNames.VELOCITY_LEFT: SensorPacket(42, 2, (-500, 500), PacketNames.VELOCITY_LEFT, [5, 6, 100]),
+    SensorNames.OPEN_INTERFACE_MODE: Sensor(35, 1, (0, 3), SensorNames.OPEN_INTERFACE_MODE, [5, 6, 100]),
+    SensorNames.SONG_NUMBER: Sensor(36, 1, (0, 4), SensorNames.SONG_NUMBER, [5, 6, 100]),
+    SensorNames.SONG_PLAYING: Sensor(37, 1, (0, 1), SensorNames.SONG_PLAYING, [5, 6, 100]),
+    SensorNames.OI_STREAM_NUM_PACKETS: Sensor(38, 1, (0, 108), SensorNames.OI_STREAM_NUM_PACKETS, [5, 6, 100]),
+    SensorNames.VELOCITY: Sensor(39, 2, (-500, 500), SensorNames.VELOCITY, [5, 6, 100]),
+    SensorNames.RADIUS: Sensor(40, 2, (-32768, 32767), SensorNames.RADIUS, [5, 6, 100]),
+    SensorNames.VELOCITY_RIGHT: Sensor(41, 2, (-500, 500), SensorNames.VELOCITY_RIGHT, [5, 6, 100]),
+    SensorNames.VELOCITY_LEFT: Sensor(42, 2, (-500, 500), SensorNames.VELOCITY_LEFT, [5, 6, 100]),
     # Block 5, 6 end
     # Block 101 begin
-    PacketNames.ENCODER_COUNTS_LEFT: SensorPacket(43, 2, (-32768, 32767), PacketNames.ENCODER_COUNTS_LEFT, [100, 101]),
-    PacketNames.ENCODER_COUNTS_RIGHT: SensorPacket(44, 2, (-32768, 32767), PacketNames.ENCODER_COUNTS_RIGHT, [100, 101]),
-    PacketNames.LIGHT_BUMPER: SensorPacket(45, 1, (0, 127), PacketNames.LIGHT_BUMPER, [100, 101]),
+    SensorNames.ENCODER_COUNTS_LEFT: Sensor(43, 2, (-32768, 32767), SensorNames.ENCODER_COUNTS_LEFT, [100, 101]),
+    SensorNames.ENCODER_COUNTS_RIGHT: Sensor(44, 2, (-32768, 32767), SensorNames.ENCODER_COUNTS_RIGHT, [100, 101]),
+    SensorNames.LIGHT_BUMPER: Sensor(45, 1, (0, 127), SensorNames.LIGHT_BUMPER, [100, 101]),
     # Block 106 begin
-    PacketNames.LIGHT_BUMP_LEFT: SensorPacket(46, 2, (0, 4095), PacketNames.LIGHT_BUMP_LEFT, [100, 101, 106]),
-    PacketNames.LIGHT_BUMP_FRONT_LEFT: SensorPacket(47, 2, (0, 4095), PacketNames.LIGHT_BUMP_FRONT_LEFT, [100, 101, 106]),
-    PacketNames.LIGHT_BUMP_CENTER_LEFT: SensorPacket(48, 2, (0, 4095), PacketNames.LIGHT_BUMP_CENTER_LEFT, [100, 101, 106]),
-    PacketNames.LIGHT_BUMP_CENTER_RIGHT: SensorPacket(49, 2, (0, 4095), PacketNames.LIGHT_BUMP_CENTER_RIGHT, [100, 101, 106]),
-    PacketNames.LIGHT_BUMP_FRONT_RIGHT: SensorPacket(50, 2, (0, 4095), PacketNames.LIGHT_BUMP_FRONT_RIGHT, [100, 101, 106]),
-    PacketNames.LIGHT_BUMP_RIGHT: SensorPacket(51, 2, (0, 4095), PacketNames.LIGHT_BUMP_RIGHT, [100, 101, 106]),
+    SensorNames.LIGHT_BUMP_LEFT: Sensor(46, 2, (0, 4095), SensorNames.LIGHT_BUMP_LEFT, [100, 101, 106]),
+    SensorNames.LIGHT_BUMP_FRONT_LEFT: Sensor(47, 2, (0, 4095), SensorNames.LIGHT_BUMP_FRONT_LEFT, [100, 101, 106]),
+    SensorNames.LIGHT_BUMP_CENTER_LEFT: Sensor(48, 2, (0, 4095), SensorNames.LIGHT_BUMP_CENTER_LEFT, [100, 101, 106]),
+    SensorNames.LIGHT_BUMP_CENTER_RIGHT: Sensor(49, 2, (0, 4095), SensorNames.LIGHT_BUMP_CENTER_RIGHT, [100, 101, 106]),
+    SensorNames.LIGHT_BUMP_FRONT_RIGHT: Sensor(50, 2, (0, 4095), SensorNames.LIGHT_BUMP_FRONT_RIGHT, [100, 101, 106]),
+    SensorNames.LIGHT_BUMP_RIGHT: Sensor(51, 2, (0, 4095), SensorNames.LIGHT_BUMP_RIGHT, [100, 101, 106]),
     # Block 106 end
-    PacketNames.IR_OPCODE_LEFT: SensorPacket(52, 1, (0, 255), PacketNames.IR_OPCODE_LEFT, [100, 101]),
-    PacketNames.IR_OPCODE_RIGHT: SensorPacket(53, 1, (0, 255), PacketNames.IR_OPCODE_RIGHT, [100, 101]),
+    SensorNames.IR_OPCODE_LEFT: Sensor(52, 1, (0, 255), SensorNames.IR_OPCODE_LEFT, [100, 101]),
+    SensorNames.IR_OPCODE_RIGHT: Sensor(53, 1, (0, 255), SensorNames.IR_OPCODE_RIGHT, [100, 101]),
     # Block 107 begin
-    PacketNames.LEFT_MOTOR_CURRENT: SensorPacket(54, 2, (-32768, 32767), PacketNames.LEFT_MOTOR_CURRENT, [100, 101, 107]),
-    PacketNames.RIGHT_MOTOR_CURRENT: SensorPacket(55, 2, (-32768, 32767), PacketNames.RIGHT_MOTOR_CURRENT, [100, 101, 107]),
-    PacketNames.MAIN_BRUSH_CURRENT: SensorPacket(56, 2, (-32768, 32767), PacketNames.MAIN_BRUSH_CURRENT, [100, 101, 107]),
-    PacketNames.SIDE_BRUSH_CURRENT: SensorPacket(57, 2, (-32768, 32767), PacketNames.SIDE_BRUSH_CURRENT, [100, 101, 107]),
-    PacketNames.STASIS: SensorPacket(58, 1, (0, 3), PacketNames.STASIS, [100, 101, 107]),
+    SensorNames.LEFT_MOTOR_CURRENT: Sensor(54, 2, (-32768, 32767), SensorNames.LEFT_MOTOR_CURRENT, [100, 101, 107]),
+    SensorNames.RIGHT_MOTOR_CURRENT: Sensor(55, 2, (-32768, 32767), SensorNames.RIGHT_MOTOR_CURRENT, [100, 101, 107]),
+    SensorNames.MAIN_BRUSH_CURRENT: Sensor(56, 2, (-32768, 32767), SensorNames.MAIN_BRUSH_CURRENT, [100, 101, 107]),
+    SensorNames.SIDE_BRUSH_CURRENT: Sensor(57, 2, (-32768, 32767), SensorNames.SIDE_BRUSH_CURRENT, [100, 101, 107]),
+    SensorNames.STASIS: Sensor(58, 1, (0, 3), SensorNames.STASIS, [100, 101, 107]),
 }
 
 
-def get_packet_by_id(id: int) -> SensorPacket | None:
+def get_sensor_by_id(id: int) -> Sensor | None:
     """Return the SensorPacket with the given id, or None if not found."""
-    for pkt in PACKETS.values():
+    for pkt in SENSORS.values():
         if pkt.id == id:
             return pkt
     return None
 
 
-def get_packet_by_name(name: str) -> SensorPacket | None:
+def get_sensor_by_name(name: str) -> Sensor | None:
     """Return the SensorPacket with the given name, or None if not found."""
-    return PACKETS.get(name, None)
+    return SENSORS.get(name, None)
 
 
 if __name__ == "__main__":
     # simple test
-    pkt = PACKETS["Encoder Counts Left"]
+    pkt = SENSORS["Encoder Counts Left"]
     assert pkt is not None
 
     print(pkt.unpack(b'\x01\x02'))  # should be 258

@@ -7,7 +7,7 @@
 ##############################################
 
 from pycreate2 import Create2
-from pycreate2.sensors import PacketNames
+from pycreate2.sensors import SensorNames
 import sys
 import time
 
@@ -28,13 +28,13 @@ if __name__ == "__main__":
 
     cnt = 0
     names = [
-        PacketNames.LIGHT_BUMP_LEFT,
-        PacketNames.LIGHT_BUMP_FRONT_LEFT,
-        PacketNames.LIGHT_BUMP_CENTER_LEFT,
-        PacketNames.LIGHT_BUMP_CENTER_RIGHT,
-        PacketNames.LIGHT_BUMP_FRONT_RIGHT,
-        PacketNames.LIGHT_BUMP_RIGHT,
-        PacketNames.BATTERY_CHARGE
+        SensorNames.LIGHT_BUMP_LEFT,
+        SensorNames.LIGHT_BUMP_FRONT_LEFT,
+        SensorNames.LIGHT_BUMP_CENTER_LEFT,
+        SensorNames.LIGHT_BUMP_CENTER_RIGHT,
+        SensorNames.LIGHT_BUMP_FRONT_RIGHT,
+        SensorNames.LIGHT_BUMP_RIGHT,
+        SensorNames.BATTERY_CHARGE
     ]
     while True:
         # Packet 100 contains all sensor data.

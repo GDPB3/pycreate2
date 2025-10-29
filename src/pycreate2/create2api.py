@@ -315,16 +315,24 @@ class Create2(object):
     # ------------------------ Sensors ----------------------------
 
     def get_sensor_list(self, sensor_list: Sequence[str | int]) -> dict[str, int]:
+        """
+        Request a list of sensor packets by name or id.
+
+        :param sensor_list: list of sensor names (str) or ids (int)
+        :type sensor_list: Sequence[str | int]
+        :return: dictionary of sensor name to value
+        :rtype: dict[str, int]
+        """
         # Convert the names to packet ids
-        packet_list: list[sensors.SensorPacket] = []
+        packet_list: list[sensors.Sensor] = []
 
         for s in sensor_list:
             if isinstance(s, str):
-                pkt = sensors.get_packet_by_name(s)
+                pkt = sensors.get_sensor_by_name(s)
                 assert pkt is not None, f"Sensor name '{s}' not found"
                 packet_list.append(pkt)
             elif isinstance(s, int):
-                pkt = sensors.get_packet_by_id(s)
+                pkt = sensors.get_sensor_by_id(s)
                 assert pkt is not None, f"Sensor id '{s}' not found"
                 packet_list.append(pkt)
             else:
@@ -345,6 +353,41 @@ class Create2(object):
         index = 0
         for pkt in packet_list:
             raw_bytes = packet_byte_data[index:index+pkt.size]
+            sensor_data[pkt.name] = pkt.unpack(raw_bytes)
+            index += pkt.size
+
+        return sensor_data
+
+    def get_sensor_group(self, group_id: int) -> dict[str, int]:
+        """
+        Request a whole sensor group by its id.
+
+        :param group_id: sensor group id
+        :type group_id: int
+        :return: dictionary of sensor name to value
+        :rtype: dict[str, int]
+        """
+        # Get all sensors belonging to the group and sort them by id in ascending order
+        sensor_list: list[sensors.Sensor] = []
+        for name, sensor in sensors.SENSORS.items():
+            if group_id in sensor.membership:
+                sensor_list.append(sensor)
+
+        sensor_list.sort(key=lambda s: s.id)
+
+        # Request the packet group
+        self.SCI.write(Opcodes.SENSORS.value, (group_id,))
+
+        # Calculate total bytes to read
+        total_bytes = sum(pkt.size for pkt in sensor_list)
+        time.sleep(0.015)  # wait 15 msec
+
+        # Read the data
+        group_data = self.SCI.read(total_bytes)
+        sensor_data: dict[str, int] = {}
+        index = 0
+        for pkt in sensor_list:
+            raw_bytes = group_data[index:index+pkt.size]
             sensor_data[pkt.name] = pkt.unpack(raw_bytes)
             index += pkt.size
 
