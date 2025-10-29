@@ -169,8 +169,9 @@ sensors.wall == sensors[1]  # True
 
 ## Change Log
 
-|            |         |                                    |
+| Date       | Version | Description                        |
 | ---------- | ------- | ---------------------------------- |
+| 2025-10-29 | 0.8.7   | Allow reading specific sensors     |
 | 2025-10-29 | 0.8.6   | Logger                             |
 | 2025-10-26 | 0.8.2-5 | Didn't take notes :p               |
 | 2021-02-22 | 0.8.1   | Cleaned up code                    |
