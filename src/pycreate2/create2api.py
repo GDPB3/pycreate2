@@ -18,16 +18,17 @@ class Create2(object):
     This is the only class that outside scripts should be interacting with.
     """
 
-    def __init__(self, port, baud=115200):
+    def __init__(self, port: str = "/dev/ttyUSB0", baud: int = 115200):
         """
-        Constructor, sets up class
-        - creates serial port
-        - creates decoder
+        Constructor.
+
+        :param port: the serial port to open, ie, '/dev/ttyUSB0'
+        :type port: str
+        :param baud: default is 115200, can be set to 19200 doing nefarious things
+        :type baud: int
         """
         self.SCI = SerialCommandInterface()
         self.SCI.open(port, baud)
-        # self.decoder = SensorPacketDecoder()
-        self.decoder = None
         self.sleep_timer = 0.5
         self.song_list = {}
 

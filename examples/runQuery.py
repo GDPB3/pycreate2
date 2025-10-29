@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-#-*-coding:utf-8-*-
+# -*-coding:utf-8-*-
 ##############################################
 # The MIT License (MIT)
 # Copyright (c) 2017 Kevin Walchko
@@ -19,15 +19,8 @@ def prettyPrint(sensors):
 
 
 if __name__ == "__main__":
-    # Create a Create2 Bot
-    port = '/dev/tty.usbserial-DA01NX3Z'
-    baud = {
-        'default': 115200,
-        'alt': 19200  # shouldn't need this unless you accidentally set it to this
-    }
-
     # setup create 2
-    bot = pycreate2.Create2(port)
+    bot = pycreate2.Create2()
     bot.start()
     bot.safe()
 
