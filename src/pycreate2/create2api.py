@@ -7,6 +7,7 @@
 
 import struct  # there are 2 places that use this ... why?
 import time
+import pycreate2.sensors as sensors
 from pycreate2.packets import SensorPacketDecoder
 from pycreate2.createSerial import SerialCommandInterface
 from pycreate2.OI import DriveDirection, Opcodes
@@ -31,6 +32,10 @@ class Create2(object):
         self.SCI.open(port, baud)
         self.sleep_timer = 0.5
         self.song_list = {}
+
+    @classmethod
+    async def create(cls, port: str = "/dev/ttyUSB0", baud: int = 115200):
+        ...
 
     def __del__(self):
         """Destructor, cleans up when class goes out of scope"""
@@ -307,6 +312,42 @@ class Create2(object):
         return time_len
 
     # ------------------------ Sensors ----------------------------
+
+    def get_sensor_list(self, sensor_list: list[str | int]) -> dict[str, int]:
+        # Convert the names to packet ids
+        packet_list: list[sensors.SensorPacket] = []
+
+        for s in sensor_list:
+            if isinstance(s, str):
+                pkt = sensors.get_packet_by_name(s)
+                assert pkt is not None, f"Sensor name '{s}' not found"
+                packet_list.append(pkt)
+            elif isinstance(s, int):
+                pkt = sensors.get_packet_by_id(s)
+                assert pkt is not None, f"Sensor id '{s}' not found"
+                packet_list.append(pkt)
+            else:
+                raise Exception(
+                    f"Sensor list must contain strings or integers, got {type(s)}")
+
+        # Request the packets
+        msg = [len(packet_list)] + [pkt.id for pkt in packet_list]
+        self.SCI.write(Opcodes.QUERY_LIST.value, tuple(msg))
+        time.sleep(0.015)  # wait 15 msec
+
+        # Calculate total bytes to read
+        total_bytes = sum(pkt.size for pkt in packet_list)
+        packet_byte_data = self.SCI.read(total_bytes)
+
+        # Decode the data
+        sensor_data: dict[str, int] = {}
+        index = 0
+        for pkt in packet_list:
+            raw_bytes = packet_byte_data[index:index+pkt.size]
+            sensor_data[pkt.name] = pkt.unpack(raw_bytes)
+            index += pkt.size
+
+        return sensor_data
 
     def get_sensors(self):
         """
