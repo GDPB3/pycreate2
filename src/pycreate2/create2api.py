@@ -8,6 +8,7 @@
 import struct  # there are 2 places that use this ... why?
 import time
 import pycreate2.sensors as sensors
+from typing import Sequence
 from pycreate2.packets import SensorPacketDecoder
 from pycreate2.createSerial import SerialCommandInterface
 from pycreate2.OI import DriveDirection, Opcodes
@@ -313,7 +314,7 @@ class Create2(object):
 
     # ------------------------ Sensors ----------------------------
 
-    def get_sensor_list(self, sensor_list: list[str | int]) -> dict[str, int]:
+    def get_sensor_list(self, sensor_list: Sequence[str | int]) -> dict[str, int]:
         # Convert the names to packet ids
         packet_list: list[sensors.SensorPacket] = []
 
