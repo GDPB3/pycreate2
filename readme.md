@@ -171,6 +171,7 @@ sensors.wall == sensors[1]  # True
 
 | Date       | Version | Description                        |
 | ---------- | ------- | ---------------------------------- |
+| 2025-10-29 | 0.8.8   | Confusing names                    |
 | 2025-10-29 | 0.8.7   | Allow reading specific sensors     |
 | 2025-10-29 | 0.8.6   | Logger                             |
 | 2025-10-26 | 0.8.2-5 | Didn't take notes :p               |
