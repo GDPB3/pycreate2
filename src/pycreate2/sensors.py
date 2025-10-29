@@ -1,7 +1,10 @@
 from dataclasses import dataclass
 import sys
 import struct
+import pycreate2.logger
+import logging
 
+logger = logging.getLogger("create2sensors")
 
 @dataclass
 class SensorPacket:
@@ -33,7 +36,7 @@ class SensorPacket:
                 return '>h'  # signed word
 
         # If we somehow didn't match any case, fall back to unsigned byte
-        print("Warning: could not determine pack format, defaulting to unsigned byte", file=sys.stderr)
+        logger.warning(f"Could not determine pack format of packet {self.id}")
         return 'B'
 
     def pack(self, value: int) -> bytes:
@@ -48,8 +51,8 @@ class SensorPacket:
         fmt = self.pack_format()
         unpacked = struct.unpack(fmt, data)[0]
 
-        assert self.value_range[0] <= unpacked <= self.value_range[1], \
-            f"Unpacked value {unpacked} out of range {self.value_range}"
+        if (not (self.value_range[0] <= unpacked <= self.value_range[1])):
+            logger.warning(f"Unpacked value {unpacked} out of range {self.value_range}")
 
         return unpacked
 
