@@ -6,8 +6,11 @@
 # This is basically the interface between the Create2 and pyserial
 
 import serial
+import pycreate2.logger  # just to set up logging
+import logging
 import struct
-import sys
+
+logger = logging.getLogger("create2serial")
 
 
 class SerialCommandInterface(object):
@@ -61,12 +64,7 @@ class SerialCommandInterface(object):
             self.ser.close()
         self.ser.open()
         if self.ser.is_open:
-            # print("Create opened serial: {}".format(self.ser))
-            print('-'*40)
-            print(' Create opened serial connection')
-            print('   port: {}'.format(self.ser.port))
-            print('   datarate: {} bps'.format(self.ser.baudrate))
-            print('-'*40)
+            logger.info("Create opened serial: {}".format(self.ser))
         else:
             raise Exception('Failed to open {} at {}'.format(port, baud))
 
@@ -83,6 +81,7 @@ class SerialCommandInterface(object):
         """
         msg = (opcode,) + data if data else (opcode,)
         self.ser.write(struct.pack('B' * len(msg), *msg))
+        logger.debug('Wrote: {}'.format(msg))
 
     def read(self, num_bytes: int, throw_on_timeout: bool = True) -> bytes:
         """
@@ -107,6 +106,7 @@ class SerialCommandInterface(object):
             data += self.filter_begin(new_data)
             read_bytes = len(data)
 
+        logger.debug('Read: {}'.format(data))
         return data
 
     def read_until(self, delim: bytes = b'\n\r') -> bytes:
@@ -127,8 +127,11 @@ class SerialCommandInterface(object):
         Closes the serial connection.
         """
         if self.ser.is_open:
-            print('Closing port {} @ {}'.format(self.ser.port, self.ser.baudrate))
+            logger.info(
+                'Closing port {} @ {}'.format(self.ser.port, self.ser.baudrate))
             self.ser.close()
+        else:
+            logger.warning("Trying to close a serial port that isn't open")
 
     @staticmethod
     def filter_begin(msg: bytes) -> bytes:
@@ -142,12 +145,14 @@ class SerialCommandInterface(object):
             return msg
 
         filtered, msg = msg[:found + 7], msg[found + 7:]
-        print("Filtered string: ", filtered.decode(
-            'utf-8')[:-2], file=sys.stderr)
+        logger.info("Filtered out startup message: {}".format(
+            filtered.decode('utf-8')[:-2]))
         return msg
 
 
 if __name__ == '__main__':
+    logging.basicConfig(filemode='create_serial.log', level=logging.DEBUG)
+
     msg = b'Hello World!(0x0)\n\r123'
     print(SerialCommandInterface.filter_begin(msg))
 
