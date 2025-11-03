@@ -98,22 +98,32 @@ class SerialCommandInterface(object):
         if not self.ser.is_open:
             raise Exception("You must open the serial port first")
 
-        read_bytes = 0
-        data = b""
-        while read_bytes < num_bytes:
-            to_read = num_bytes - read_bytes
-            new_data = self.ser.read(to_read)
+        # Get the number of bytes currently available
+        available_bytes = self.ser.in_waiting
+        # War crime
+        while available_bytes < num_bytes:
+            available_bytes = self.ser.in_waiting
 
-            if throw_on_timeout and len(new_data) == 0:
-                raise TimeoutError(
-                    "Timeout error: read {} of {} bytes".format(read_bytes, num_bytes)
-                )
+        # If the number of available bytes is the same as requested, read them all at once
+        if available_bytes == num_bytes:
+            data = self.ser.read(num_bytes)
+            return data
 
-            data += self.filter_begin(new_data)
-            read_bytes = len(data)
+        # If there are more bytes than requested the robot might be sending
+        # trash data, so we read it all and filter it
+        if available_bytes > num_bytes:
+            raw_data = self.ser.read(available_bytes)
+        else:
+            # If not, try to read the requested number of bytes
+            raw_data = self.ser.read(num_bytes)
 
-        logger.debug("Read: {}".format(data))
-        return data
+        filtered_data = self.filter_begin(raw_data)
+
+        if len(filtered_data) == num_bytes:
+            return filtered_data
+        else:
+            logger.warning(f"Filtered data does not match requested size")
+            return filtered_data[:num_bytes]
 
     def read_until(self, delim: bytes = b"\n\r") -> bytes:
         """
@@ -133,7 +143,8 @@ class SerialCommandInterface(object):
         Closes the serial connection.
         """
         if self.ser.is_open:
-            logger.info("Closing port {} @ {}".format(self.ser.port, self.ser.baudrate))
+            logger.info(
+                "Closing port {} @ {}".format(self.ser.port, self.ser.baudrate))
             self.ser.close()
         else:
             logger.warning("Trying to close a serial port that isn't open")
@@ -148,9 +159,10 @@ class SerialCommandInterface(object):
         if found == -1:
             return msg
 
-        filtered, msg = msg[: found + 7], msg[found + 7 :]
+        filtered, msg = msg[: found + 7], msg[found + 7:]
         logger.info(
-            "Filtered out startup message: {}".format(filtered.decode("utf-8")[:-2])
+            "Filtered out startup message: {}".format(
+                filtered.decode("utf-8")[:-2])
         )
         return msg
 
@@ -158,8 +170,36 @@ class SerialCommandInterface(object):
 if __name__ == "__main__":
     logging.basicConfig(filemode="create_serial.log", level=logging.DEBUG)
 
-    msg = b"Hello World!(0x0)\n\r123"
-    print(SerialCommandInterface.filter_begin(msg))
+    class DummySerial:
+        def __init__(self):
+            self.buffer: bytearray = bytearray()
+            self.port = "/dev/ttyUSB0"
+            self.baudrate = 115200
 
-    msg = b"Hello World!conds\r\n123"
-    print(SerialCommandInterface.filter_begin(msg))
+        def close(self):
+            ...
+
+        @property
+        def is_open(self):
+            return True
+
+        @property
+        def in_waiting(self):
+            return len(self.buffer)
+
+        def read(self, num_bytes: int) -> bytes:
+            return self.buffer[:num_bytes]
+
+        def write(self, data: bytes):
+            ...  # do nothing
+
+    interface = SerialCommandInterface()
+    dummy_serial = DummySerial()
+    interface.ser = dummy_serial  # type: ignore
+
+    dummy_serial.buffer = bytearray(
+        b"Something about a CRC(0x0)\n\rHello")
+
+    # I am waiting only for 5 bytes, but the robot has sent a log message first
+    data = interface.read(5)
+    print(data)
