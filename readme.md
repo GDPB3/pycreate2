@@ -11,10 +11,11 @@ Create 2](http://www.irobot.com/About-iRobot/STEM/Create-2.aspx)
 
 ## Install
 
-The simplest way is using `uv` (micro-venv):
+Due to this being a fork of the pycreate2 on pypi, the easiest way to install
+is using pip specifying the package location like this:
 
 ```bash
-uv add "pycreate2 @ git+https://github.com/GDPB3/pycreate2"
+pip install "pycreate2 @ git+https://github.com/GDPB3/pycreate2"
 ```
 
 ## Use
