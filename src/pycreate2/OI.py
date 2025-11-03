@@ -1,12 +1,4 @@
-##############################################
-# The MIT License (MIT)
-# Copyright (c) 2017 Kevin Walchko
-# see LICENSE for full details
-##############################################
-# I took some of these ideas from: https://bitbucket.org/lemoneer/irobot
-
-# could replace with:
-#   class LEDS(object): DEBRIS=0x01; SPOT=0x02; DOCK=0x04; CHECK_ROBOT=0x08
+# Walchko: I took some of these ideas from: https://bitbucket.org/lemoneer/irobot
 
 from enum import Enum
 

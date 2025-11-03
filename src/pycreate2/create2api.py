@@ -1,11 +1,4 @@
-##############################################
-# The MIT License (MIT)
-# Copyright (c) 2017 Kevin Walchko
-# see LICENSE for full details
-##############################################
-# This is the main code for interacting with the Create 2
-
-import struct  # there are 2 places that use this ... why?
+import struct
 import time
 import pycreate2.sensors as sensors
 from typing import Sequence

@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-# -*-coding:utf-8-*-
-##############################################
-# The MIT License (MIT)
-# Copyright (c) 2017 Kevin Walchko
-# see LICENSE for full details
-##############################################
 
 from pycreate2 import Create2
 from pycreate2.sensors import SensorNames

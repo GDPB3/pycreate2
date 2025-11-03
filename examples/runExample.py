@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-# -*-coding:utf-8-*-
-##############################################
-# The MIT License (MIT)
-# Copyright (c) 2017 Kevin Walchko
-# see LICENSE for full details
-##############################################
 # moves the roomba through a simple sequence
 
 import pycreate2
