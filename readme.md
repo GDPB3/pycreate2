@@ -1,12 +1,6 @@
-![image](https://raw.githubusercontent.com/walchko/pycreate2/master/pics/create.png)
+![image](https://raw.githubusercontent.com/GDPB3/pycreate2/master/pics/create.png)
 
 # pyCreate2
-
-[![Actions Status](https://github.com/MomsFriendlyRobotCompany/pycreate2/workflows/CheckPackage/badge.svg)](https://github.com/MomsFriendlyRobotCompany/pycreate2/actions)
-![GitHub](https://img.shields.io/github/license/MomsFriendlyRobotCompany/pycreate2)
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/pycreate2)
-![PyPI](https://img.shields.io/pypi/v/pycreate2)
-![PyPI - Downloads](https://img.shields.io/pypi/dm/pycreate2?color=aqua)
 
 A python library for controlling the [iRobot
 Create 2](http://www.irobot.com/About-iRobot/STEM/Create-2.aspx). This was used
@@ -18,23 +12,10 @@ in ECE 387 Introduction to Robotics class I taught at the US Air Force Academy.
 
 ## Install
 
-### pip
-
-The recommended way to install this library is:
-
 ```bash
-pip install pycreate2
-```
-
-### Development
-
-If you wish to develop and submit git-pulls, you can do:
-
-```bash
-git clone https://github.com/walchko/pycreate2
+git clone https://github.com/GDPB3/pycreate2
 cd pycreate2
-poetry install
-poetry run pytest -v
+uv sync
 ```
 
 ## Use
@@ -43,7 +24,8 @@ There are multiple ways to command the Create to move, here are some
 examples:
 
 ```python
-from  pycreate2 import Create2
+from pycreate2 import Create2
+from pycreate2.sensors import SensorNames
 import time
 
 # Create a Create2.
@@ -74,23 +56,20 @@ bot.drive_stop()
 
 # query some sensors
 sensors = bot.get_sensor_group(100)  # returns all data
-print(sensors.light_bumper_left)
-
-# Close the connection
-# bot.close()
+print(sensors[SensorNames.BATTERY_CHARGE])
 ```
 
 More examples are found in the [examples
-folder](https://github.com/walchko/pycreate2/tree/master/examples).
+folder](https://github.com/GDPB3/pycreate2/tree/master/examples).
 
 ## Documents
 
 Additional notes and documents are in the [docs
-folder](https://github.com/walchko/pycreate2/tree/master/docs/Markdown).
+folder](https://github.com/GDPB3/pycreate2/tree/master/docs/Markdown).
 
 ### Modes
 
-![image](https://raw.githubusercontent.com/walchko/pycreate2/master/pics/create_modes.png)
+![image](https://raw.githubusercontent.com/GDPB3/pycreate2/master/pics/create_modes.png)
 
 The different modes (OFF, PASSIVE, SAFE, and FULL) can be switched
 between by calling different commands.
@@ -104,68 +83,6 @@ between by calling different commands.
 - **FULL:** The robot will not charge and you have full control. You
   are responsible to handle any response due to cliff, wheel drop or
   any other sensors.
-
-### Sensor Data
-
-Sensor data is returned as a `namedtuple` from `collections`. The
-information can be accessed as either:
-
-```python
-sensors = bot.get_sensor_group(100)
-sensors.wall == sensors[1]  # True
-```
-
-| Sensor                    | Range             | Index |
-| ------------------------- | ----------------- | ----- |
-| bumps_wheeldrops          | \[0-15\]          | 0     |
-| wall                      | \[0-1\]           | 1     |
-| cliff_left                | \[0-1\]           | 2     |
-| cliff_front_left          | \[0-1\]           | 3     |
-| cliff_front_right         | \[0-1\]           | 4     |
-| cliff_right               | \[0-1\]           | 5     |
-| virtual_wall              | \[0-1\]           | 6     |
-| overcurrents              | \[0-29\]          | 7     |
-| dirt_detect               | \[0-255\]         | 8     |
-| ir_opcode                 | \[0-255\]         | 9     |
-| buttons                   | \[0-255\]         | 10    |
-| distance                  | \[-322768-32767\] | 11    |
-| angle                     | \[-322768-32767\] | 12    |
-| charger_state             | \[0-6\]           | 13    |
-| voltage                   | \[0-65535\]       | 14    |
-| current                   | \[-322768-32767\] | 15    |
-| temperature               | \[-128-127\]      | 16    |
-| battery_charge            | \[0-65535\]       | 17    |
-| battery_capacity          | \[0-65535\]       | 18    |
-| wall_signal               | \[0-1023\]        | 19    |
-| cliff_left_signal         | \[0-4095\]        | 20    |
-| cliff_front_left_signal   | \[0-4095\]        | 21    |
-| cliff_front_right_signal  | \[0-4095\]        | 22    |
-| cliff_right_signal        | \[0-4095\]        | 23    |
-| charger_available         | \[0-3\]           | 24    |
-| open_interface_mode       | \[0-3\]           | 25    |
-| song_number               | \[0-4\]           | 26    |
-| song_playing              | \[0-1\]           | 27    |
-| oi_stream_num_packets     | \[0-108\]         | 28    |
-| velocity                  | \[-500-500\]      | 29    |
-| radius                    | \[-322768-32767\] | 30    |
-| velocity_right            | \[-500-500\]      | 31    |
-| velocity_left             | \[-500-500\]      | 32    |
-| encoder_counts_left       | \[-322768-32767\] | 33    |
-| encoder_counts_right      | \[-322768-32767\] | 34    |
-| light_bumper              | \[0-127\]         | 35    |
-| light_bumper_left         | \[0-4095\]        | 36    |
-| light_bumper_front_left   | \[0-4095\]        | 37    |
-| light_bumper_center_left  | \[0-4095\]        | 38    |
-| light_bumper_center_right | \[0-4095\]        | 39    |
-| light_bumper_front_right  | \[0-4095\]        | 40    |
-| light_bumper_right        | \[0-4095\]        | 41    |
-| ir_opcode_left            | \[0-255\]         | 42    |
-| ir_opcode_right           | \[0-255\]         | 43    |
-| left_motor_current        | \[-322768-32767\] | 44    |
-| right_motor_current       | \[-322768-32767\] | 45    |
-| main_brush_current        | \[-322768-32767\] | 46    |
-| side_brush_current        | \[-322768-32767\] | 47    |
-| statis                    | \[0-3\]           | 48    |
 
 ## Change Log
 
