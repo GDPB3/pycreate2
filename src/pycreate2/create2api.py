@@ -214,7 +214,8 @@ class Create2(object):
         """
         r_vel = self.limit(r_vel, -500, 500)
         l_vel = self.limit(l_vel, -500, 500)
-        data = struct.unpack("4B", struct.pack(">2h", r_vel, l_vel))  # write do this?
+        data = struct.unpack("4B", struct.pack(
+            ">2h", r_vel, l_vel))  # write do this?
         self.SCI.write(Opcodes.DRIVE_DIRECT.value, data)
 
     def drive_pwm(self, r_pwm, l_pwm):
@@ -223,7 +224,8 @@ class Create2(object):
         """
         r_pwm = self.limit(r_pwm, -255, 255)
         l_pwm = self.limit(l_pwm, -255, 255)
-        data = struct.unpack("4B", struct.pack(">2h", r_pwm, l_pwm))  # write do this?
+        data = struct.unpack("4B", struct.pack(
+            ">2h", r_pwm, l_pwm))  # write do this?
         self.SCI.write(Opcodes.DRIVE_PWM.value, data)
 
     # ------------------------ LED ----------------------------
@@ -370,7 +372,7 @@ class Create2(object):
         sensor_data: dict[str, int] = {}
         index = 0
         for pkt in packet_list:
-            raw_bytes = packet_byte_data[index : index + pkt.size]
+            raw_bytes = packet_byte_data[index: index + pkt.size]
             sensor_data[pkt.name] = pkt.unpack(raw_bytes)
             index += pkt.size
 
@@ -386,12 +388,7 @@ class Create2(object):
         :rtype: dict[str, int]
         """
         # Get all sensors belonging to the group and sort them by id in ascending order
-        sensor_list: list[sensors.Sensor] = []
-        for name, sensor in sensors.SENSORS.items():
-            if group_id in sensor.membership:
-                sensor_list.append(sensor)
-
-        sensor_list.sort(key=lambda s: s.id)
+        sensor_list: list[sensors.Sensor] = sensors.get_sensor_block(group_id)
 
         # Request the packet group
         self.SCI.write(Opcodes.SENSORS.value, (group_id,))
@@ -405,7 +402,7 @@ class Create2(object):
         sensor_data: dict[str, int] = {}
         index = 0
         for pkt in sensor_list:
-            raw_bytes = group_data[index : index + pkt.size]
+            raw_bytes = group_data[index: index + pkt.size]
             sensor_data[pkt.name] = pkt.unpack(raw_bytes)
             index += pkt.size
 

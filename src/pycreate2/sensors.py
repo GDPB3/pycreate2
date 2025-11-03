@@ -197,3 +197,11 @@ def get_sensor_by_name(name: str) -> Sensor | None:
     return SENSORS.get(name, None)
 
 
+def get_sensor_block(id: int) -> list[Sensor]:
+    """Return a list of SensorPackets that belong to the given block id."""
+    block_sensors = []
+    for pkt in SENSORS.values():
+        if id in pkt.membership:
+            block_sensors.append(pkt)
+    block_sensors.sort(key=lambda s: s.id)
+    return block_sensors
