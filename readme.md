@@ -11,10 +11,10 @@ Create 2](http://www.irobot.com/About-iRobot/STEM/Create-2.aspx)
 
 ## Install
 
+The simplest way is using `uv` (micro-venv):
+
 ```bash
-git clone https://github.com/GDPB3/pycreate2
-cd pycreate2
-uv sync
+uv add "pycreate2 @ git+https://github.com/GDPB3/pycreate2"
 ```
 
 ## Use
