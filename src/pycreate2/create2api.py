@@ -2,7 +2,6 @@ import struct
 import time
 import pycreate2.sensors as sensors
 from typing import Sequence
-from pycreate2.packets import SensorPacketDecoder
 from pycreate2.createSerial import SerialCommandInterface
 from pycreate2.OI import DriveDirection, Opcodes
 import pycreate2.logger  # just to set up logging
@@ -400,22 +399,3 @@ class Create2(object):
             index += pkt.size
 
         return sensor_data
-
-    def get_sensors(self):
-        """
-        return: a namedtuple
-
-        WARNING: now this only returns pkt 100, everything. And it is the default
-            packet reques now.
-        """
-
-        opcode = Opcodes.SENSORS.value
-        cmd = (100,)
-        sensor_pkt_len = 80
-
-        self.SCI.write(opcode, cmd)
-        time.sleep(0.015)  # wait 15 msec
-        packet_byte_data = self.SCI.read(sensor_pkt_len)
-        sensors = SensorPacketDecoder(packet_byte_data)
-
-        return sensors

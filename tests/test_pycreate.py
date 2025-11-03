@@ -1,7 +1,4 @@
-from pycreate2.OI import RESPONSE_SIZES
-from pycreate2.OI import calc_query_data_len
-from pycreate2.packets import SensorPacketDecoder
-import os
+from pycreate2.OI import RESPONSE_SIZES, calc_query_data_len
 
 
 def test_packet_id():
@@ -20,13 +17,3 @@ def test_packet_length():
     pkts = [100]
     packet_len = calc_query_data_len(pkts)
     assert packet_len == 80
-
-
-def test_process_packet():
-    try:
-        # i need to get a known packet and check values
-        data = bytearray(os.urandom(80))
-        sensors = SensorPacketDecoder(data)
-        assert isinstance(sensors, tuple)
-    except:
-        assert False
