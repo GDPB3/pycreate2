@@ -93,9 +93,9 @@ class SensorNames:
     SONG_PLAYING = "Song Playing?"
     OI_STREAM_NUM_PACKETS = "Oi Stream Num Packets"
     VELOCITY = "Velocity"
-    RADIUS = "Radius"
-    VELOCITY_RIGHT = "Velocity Right"
-    VELOCITY_LEFT = "Velocity Left"
+    REQUESTED_RADIUS = "Requested Radius"
+    REQUESTED_VELOCITY_RIGHT = "Requested Velocity Right"
+    REQUESTED_VELOCITY_LEFT = "Requested Velocity Left"
     ENCODER_COUNTS_LEFT = "Encoder Counts Left"
     ENCODER_COUNTS_RIGHT = "Encoder Counts Right"
     LIGHT_BUMPER = "Light Bumper"
@@ -157,9 +157,9 @@ SENSORS = {
     SensorNames.SONG_PLAYING: Sensor(37, 1, (0, 1), SensorNames.SONG_PLAYING, [5, 6, 100]),
     SensorNames.OI_STREAM_NUM_PACKETS: Sensor(38, 1, (0, 108), SensorNames.OI_STREAM_NUM_PACKETS, [5, 6, 100]),
     SensorNames.VELOCITY: Sensor(39, 2, (-500, 500), SensorNames.VELOCITY, [5, 6, 100]),
-    SensorNames.RADIUS: Sensor(40, 2, (-32768, 32767), SensorNames.RADIUS, [5, 6, 100]),
-    SensorNames.VELOCITY_RIGHT: Sensor(41, 2, (-500, 500), SensorNames.VELOCITY_RIGHT, [5, 6, 100]),
-    SensorNames.VELOCITY_LEFT: Sensor(42, 2, (-500, 500), SensorNames.VELOCITY_LEFT, [5, 6, 100]),
+    SensorNames.REQUESTED_RADIUS: Sensor(40, 2, (-32768, 32767), SensorNames.REQUESTED_RADIUS, [5, 6, 100]),
+    SensorNames.REQUESTED_VELOCITY_RIGHT: Sensor(41, 2, (-500, 500), SensorNames.REQUESTED_VELOCITY_RIGHT, [5, 6, 100]),
+    SensorNames.REQUESTED_VELOCITY_LEFT: Sensor(42, 2, (-500, 500), SensorNames.REQUESTED_VELOCITY_LEFT, [5, 6, 100]),
     # Block 5, 6 end
     # Block 101 begin
     SensorNames.ENCODER_COUNTS_LEFT: Sensor(43, 2, (-32768, 32767), SensorNames.ENCODER_COUNTS_LEFT, [100, 101]),
