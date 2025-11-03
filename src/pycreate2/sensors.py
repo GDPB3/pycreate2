@@ -197,12 +197,3 @@ def get_sensor_by_name(name: str) -> Sensor | None:
     return SENSORS.get(name, None)
 
 
-if __name__ == "__main__":
-    # simple test
-    pkt = SENSORS["Encoder Counts Left"]
-    assert pkt is not None
-
-    print(pkt.unpack(b'\x01\x02'))  # should be 258
-    print(pkt.pack(258))            # should be b'\x01\x02'
-    print(pkt.pack(-40000))         # should be b'\x9c\x00' (clamped)
-    pkt.unpack(b'\x80\x00\x00')     # should raise an assertion
