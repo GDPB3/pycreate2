@@ -52,10 +52,6 @@ class SerialCommandInterface(object):
         self.ser.baudrate = baud
         self.ser.timeout = timeout
 
-        # if we get data on open, it's a startup message.
-        # read it and return it to be parsed/handled by caller
-        startup_msg = self.ser.read(2048)
-
         if self.ser.is_open:
             self.ser.close()
         self.ser.open()
@@ -63,6 +59,10 @@ class SerialCommandInterface(object):
             logger.info("Create opened serial: {}".format(self.ser))
         else:
             raise Exception("Failed to open {} at {}".format(port, baud))
+
+        # if we get data on open, it's a startup message.
+        # read it and return it to be parsed/handled by caller
+        startup_msg = self.ser.read(2048)
 
         return startup_msg
 
