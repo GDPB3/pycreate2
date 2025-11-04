@@ -1,21 +1,27 @@
 [project]
 name = "pycreate2"
-version = "0.9"
+version = "0.9.1"
 description = "A library to control iRobot Create 2 with python"
 readme = "readme.md"
 homepage = "https://pypi.org/project/pycreate2/"
 repository = "https://github.com/GDPB3/pycreate2"
-keywords = ["roomba","irobot", "create 2", "api", "framework", "library", "robotics", "robot"]
+keywords = [
+    "roomba",
+    "irobot",
+    "create 2",
+    "api",
+    "framework",
+    "library",
+    "robotics",
+    "robot",
+]
 license = { file = "LICENSE" }
 authors = [
     { name = "walchko", email = "walchko@users.noreply.github.com" },
-    { name = "luengor", email = "aluengor0001@gmail.com" }
+    { name = "luengor", email = "aluengor0001@gmail.com" },
 ]
 requires-python = ">=3.13"
-dependencies = [
-    "pyserial>=3.5",
-    "pytest>=8.4.2",
-]
+dependencies = ["pyserial>=3.5", "pytest>=8.4.2"]
 
 [project.scripts]
 create_monitor = "pycreate2.scripts.create_monitor:main"
