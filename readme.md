@@ -88,7 +88,9 @@ between by calling different commands.
 
 | Date       | Version | Description                        |
 | ---------- | ------- | ---------------------------------- |
-| 2025-11-10 | 0.9     | Pytest and other minor changes     |
+| 2025-11-05 | 0.9.2   | Changed message filtering again    |
+| 2025-11-04 | 0.9.1   | Move startup message filtering     |
+| 2025-11-03 | 0.9     | Pytest and other minor changes     |
 | 2025-11-03 | 0.8.9   | More filtering and startup message |
 | 2025-10-29 | 0.8.8   | Confusing names                    |
 | 2025-10-29 | 0.8.7   | Allow reading specific sensors     |

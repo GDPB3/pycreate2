@@ -40,7 +40,7 @@ wheels = [
 
 [[package]]
 name = "pycreate2"
-version = "0.9"
+version = "0.9.2"
 source = { editable = "." }
 dependencies = [
     { name = "pyserial" },
