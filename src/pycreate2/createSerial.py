@@ -29,6 +29,7 @@ class SerialCommandInterface(object):
             rtscts=False,
             dsrdtr=False,
         )
+        self.read_buffer = bytearray()
 
     def __del__(self):
         """
@@ -81,7 +82,7 @@ class SerialCommandInterface(object):
         self.ser.write(struct.pack("B" * len(msg), *msg))
         logger.debug("Wrote: {}".format(msg))
 
-    def read(self, num_bytes: int, throw_on_timeout: bool = True) -> bytes:
+    def read(self, num_bytes: int) -> bytes:
         """
         Read a string of 'num_bytes' bytes from the robot.
 
@@ -91,32 +92,43 @@ class SerialCommandInterface(object):
         if not self.ser.is_open:
             raise Exception("You must open the serial port first")
 
+        output = bytearray()
+
+        # First read from the internal buffer
+        if len(self.read_buffer) >= num_bytes:
+            output.extend(self.read_buffer[:num_bytes])
+            self.read_buffer = self.read_buffer[num_bytes:]
+            logger.debug(f"Read from buffer: {output}")
+            return bytes(output)
+
+        output.extend(self.read_buffer)
+        self.read_buffer = bytearray()
+
+        # Then read the remaining bytes from the serial port
+        remaining_bytes = num_bytes - len(output)
+
         # Get the number of bytes currently available
         available_bytes = self.ser.in_waiting
-        # War crime
-        while available_bytes < num_bytes:
-            available_bytes = self.ser.in_waiting
 
-        # If the number of available bytes is the same as requested, read them all at once
-        if available_bytes == num_bytes:
-            data = self.ser.read(num_bytes)
-            return data
-
-        # If there are more bytes than requested the robot might be sending
-        # trash data, so we read it all and filter it
-        if available_bytes > num_bytes:
+        # If the number is greater, read all and filter
+        if available_bytes > remaining_bytes:
             raw_data = self.ser.read(available_bytes)
+            logger.debug(f"Read raw data: {raw_data}")
+            filtered_data = self.filter_begin(raw_data)
+            output.extend(filtered_data[:remaining_bytes])
+            extra = filtered_data[remaining_bytes:]
+            if extra:
+                logger.warning(
+                    f"Accumulated extra bytes in read: {extra}"
+                )
+                self.read_buffer.extend(extra)
         else:
-            # If not, try to read the requested number of bytes
-            raw_data = self.ser.read(num_bytes)
+            logger.debug(
+                "Reading {} bytes from serial".format(remaining_bytes))
+            output.extend(self.ser.read(remaining_bytes))
 
-        filtered_data = self.filter_begin(raw_data)
-
-        if len(filtered_data) == num_bytes:
-            return filtered_data
-        else:
-            logger.warning(f"Filtered data does not match requested size")
-            return filtered_data[:num_bytes]
+        logger.debug(f"Final read output: {output}")
+        return bytes(output)
 
     def read_until(self, delim: bytes = b"\n\r") -> bytes:
         """
