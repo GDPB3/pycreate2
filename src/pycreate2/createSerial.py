@@ -2,6 +2,7 @@ import serial
 import pycreate2.logger  # just to set up logging
 import logging
 import struct
+import time
 
 logger = logging.getLogger("create2serial")
 
@@ -110,25 +111,30 @@ class SerialCommandInterface(object):
         # Then read the remaining bytes from the serial port
         remaining_bytes = num_bytes - len(output)
 
-        # Get the number of bytes currently available
-        available_bytes = self.ser.in_waiting
 
-        # If the number is greater, read all and filter
-        if available_bytes > remaining_bytes:
-            raw_data = self.ser.read(available_bytes)
-            logger.debug(f"Read raw data: {raw_data}")
-            filtered_data = self.filter_begin(raw_data)
-            output.extend(filtered_data[:remaining_bytes])
-            extra = filtered_data[remaining_bytes:]
-            if extra:
-                logger.warning(
-                    f"Accumulated extra bytes in read: {extra}"
-                )
-                self.read_buffer.extend(extra)
-        else:
-            logger.debug(
-                "Reading {} out of {} bytes from serial".format(remaining_bytes, num_bytes))
-            output.extend(self.ser.read(remaining_bytes))
+        # Read and filter
+        while remaining_bytes > 0:
+            # Get the number of bytes currently available
+            available_bytes = self.ser.in_waiting
+
+            # If there are bytes available, read all and filter
+            if available_bytes > 0:
+                raw_data = self.ser.read(available_bytes)
+                logger.debug(f"Read raw data: {raw_data}")
+                filtered_data = self.filter_begin(raw_data)
+                bytes_to_take = min(remaining_bytes, len(filtered_data))
+                output.extend(filtered_data[:bytes_to_take])
+                extra = filtered_data[bytes_to_take:]
+                if extra:
+                    logger.warning(
+                        f"Accumulated extra bytes in read: {extra}"
+                    )
+                    self.read_buffer.extend(extra)
+            else:
+                # Wait a bit for more data to arrive
+                time.sleep(0.02)
+
+            remaining_bytes = num_bytes - len(output)
 
         logger.debug(f"Final read output: {output}")
         return bytes(output)
