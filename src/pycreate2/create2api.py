@@ -351,6 +351,9 @@ class Create2(object):
                     f"Sensor list must contain strings or integers, got {type(s)}"
                 )
 
+        logger.debug(
+            f"Requesting sensors: {', '.join(f"'{pkt.name}' ({pkt.size} bytes)" for pkt in packet_list)}")
+
         # Request the packets
         msg = [len(packet_list)] + [pkt.id for pkt in packet_list]
         self.SCI.write(Opcodes.QUERY_LIST.value, tuple(msg))
@@ -358,12 +361,16 @@ class Create2(object):
 
         # Calculate total bytes to read
         total_bytes = sum(pkt.size for pkt in packet_list)
+        logger.debug(f"Expecting {total_bytes} bytes of sensor data")
+
         packet_byte_data = self.SCI.read(total_bytes)
 
         # Decode the data
         sensor_data: dict[str, int] = {}
         index = 0
         for pkt in packet_list:
+            logger.debug(
+                f"Unpacking sensor '{pkt.name}' from bytes {index} to {index + pkt.size}")
             raw_bytes = packet_byte_data[index: index + pkt.size]
             sensor_data[pkt.name] = pkt.unpack(raw_bytes)
             index += pkt.size
@@ -382,11 +389,15 @@ class Create2(object):
         # Get all sensors belonging to the group and sort them by id in ascending order
         sensor_list: list[sensors.Sensor] = sensors.get_sensor_block(group_id)
 
+        logger.debug(
+            f"Requesting sensor group {group_id} with sensors: {', '.join(f"'{pkt.name}' ({pkt.size} bytes)" for pkt in sensor_list)}")
+
         # Request the packet group
         self.SCI.write(Opcodes.SENSORS.value, (group_id,))
 
         # Calculate total bytes to read
         total_bytes = sum(pkt.size for pkt in sensor_list)
+        logger.debug(f"Expecting {total_bytes} bytes of sensor data")
         time.sleep(0.015)  # wait 15 msec
 
         # Read the data
@@ -394,6 +405,8 @@ class Create2(object):
         sensor_data: dict[str, int] = {}
         index = 0
         for pkt in sensor_list:
+            logger.debug(
+                f"Unpacking sensor '{pkt.name}' from bytes {index} to {index + pkt.size}")
             raw_bytes = group_data[index: index + pkt.size]
             sensor_data[pkt.name] = pkt.unpack(raw_bytes)
             index += pkt.size
