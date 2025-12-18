@@ -113,7 +113,9 @@ class SerialCommandInterface(object):
 
 
         # Read and filter
-        while remaining_bytes > 0:
+        MAX_READ_ATTEMPTS = 100
+        read_attempts = 0
+        while remaining_bytes > 0 and read_attempts < MAX_READ_ATTEMPTS:
             # Get the number of bytes currently available
             available_bytes = self.ser.in_waiting
 
@@ -132,9 +134,13 @@ class SerialCommandInterface(object):
                     self.read_buffer.extend(extra)
             else:
                 # Wait a bit for more data to arrive
+                read_attempts += 1
                 time.sleep(0.02)
 
             remaining_bytes = num_bytes - len(output)
+
+        if read_attempts == MAX_READ_ATTEMPTS:
+            logger.error("Max read attempts reached while reading from serial port.")
 
         logger.debug(f"Final read output: {output}")
         return bytes(output)
