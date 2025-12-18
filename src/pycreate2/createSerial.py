@@ -101,8 +101,11 @@ class SerialCommandInterface(object):
             logger.debug(f"Read from buffer: {output}")
             return bytes(output)
 
-        output.extend(self.read_buffer)
-        self.read_buffer = bytearray()
+        if len(self.read_buffer) > 0:
+            logger.debug(
+                f"Reading {len(self.read_buffer)} bytes from read buffer")
+            output.extend(self.read_buffer)
+            self.read_buffer = bytearray()
 
         # Then read the remaining bytes from the serial port
         remaining_bytes = num_bytes - len(output)
@@ -124,7 +127,7 @@ class SerialCommandInterface(object):
                 self.read_buffer.extend(extra)
         else:
             logger.debug(
-                "Reading {} bytes from serial".format(remaining_bytes))
+                "Reading {} out of {} bytes from serial".format(remaining_bytes, num_bytes))
             output.extend(self.ser.read(remaining_bytes))
 
         logger.debug(f"Final read output: {output}")

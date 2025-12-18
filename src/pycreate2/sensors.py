@@ -47,8 +47,11 @@ class Sensor:
 
     def unpack(self, data: bytes) -> int:
         """Return unpacked value from bytes for this sensor packet."""
-        assert len(
-            data) == self.size, f"Data length {len(data)} does not match expected size {self.size}"
+        if len(data) != self.size:
+            logger.error(
+                f"Data length {len(data)} does not match expected size {self.size} for sensor {self.name} (ID {self.id})"
+            )
+            raise ValueError("Invalid data length for unpacking sensor packet")
         fmt = self.pack_format()
         unpacked = struct.unpack(fmt, data)[0]
 
