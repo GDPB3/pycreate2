@@ -88,6 +88,8 @@ between by calling different commands.
 
 | Date       | Version | Description                        |
 | ---------- | ------- | ---------------------------------- |
+| 2025-12-22 | 0.9.8   | Better filtering (yes, again)      |
+| 2025-12-21 | 0.9.3-7 | Lots of logging                    |
 | 2025-11-05 | 0.9.2   | Changed message filtering again    |
 | 2025-11-04 | 0.9.1   | Move startup message filtering     |
 | 2025-11-03 | 0.9     | Pytest and other minor changes     |

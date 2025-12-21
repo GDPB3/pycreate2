@@ -31,6 +31,7 @@ class SerialCommandInterface(object):
             dsrdtr=False,
         )
         self.read_buffer = bytearray()
+        self.read_attempts = 100
 
     def __del__(self):
         """
@@ -184,6 +185,16 @@ class SerialCommandInterface(object):
 
     @staticmethod
     def filter_begin(msg: bytes) -> bytes:
+        full_flash_message = b"    Flash CRC successful 0x0 (0x0)\n\r"
+        if full_flash_message in msg:
+            msg = msg.replace(full_flash_message, b"")
+            logger.info(
+                "Filtered out startup message: {}".format(
+                    full_flash_message.decode("utf-8")[:-2])
+            )
+            return SerialCommandInterface.filter_begin(msg)  # Recursion to filter multiple messages
+
+        # No exact full message, look for partials
         flash_msg = msg.find(b"(0x0)\n\r")
         wakeup_msg = msg.find(b"conds\r\n")
 
@@ -197,4 +208,4 @@ class SerialCommandInterface(object):
             "Filtered out startup message: {}".format(
                 filtered.decode("utf-8")[:-2])
         )
-        return msg
+        return msg # recursion here is risky
