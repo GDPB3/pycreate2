@@ -34,7 +34,7 @@ def dummy_interface(logging_setup) -> SerialCommandInterface:
     interface.ser = dummy_serial  # type: ignore
     return interface
 
-FLASH_CRC_MSG = b"    Flash CRC successful 0x0 (0x0)\n\r"
+FLASH_CRC_MSG = b"    Flash CRC successful: 0x0 (0x0)\n\r"
 
 def test_filter_long(dummy_interface: SerialCommandInterface):
     dummy_interface.ser.buffer = bytearray(

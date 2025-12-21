@@ -185,11 +185,11 @@ class SerialCommandInterface(object):
 
     @staticmethod
     def filter_begin(msg: bytes) -> bytes:
-        full_flash_message = b"    Flash CRC successful 0x0 (0x0)\n\r"
+        full_flash_message = b"    Flash CRC successful: 0x0 (0x0)\n\r"
         if full_flash_message in msg:
             msg = msg.replace(full_flash_message, b"")
-            logger.info(
-                "Filtered out startup message: {}".format(
+            logger.warning(
+                "Filtered out exact startup message: {}".format(
                     full_flash_message.decode("utf-8")[:-2])
             )
             return SerialCommandInterface.filter_begin(msg)  # Recursion to filter multiple messages
@@ -204,7 +204,7 @@ class SerialCommandInterface(object):
             return msg
 
         filtered, msg = msg[: found + 7], msg[found + 7:]
-        logger.info(
+        logger.warning(
             "Filtered out startup message: {}".format(
                 filtered.decode("utf-8")[:-2])
         )
