@@ -356,7 +356,13 @@ class Create2(object):
 
         # Request the packets
         msg = [len(packet_list)] + [pkt.id for pkt in packet_list]
-        self.SCI.write(Opcodes.QUERY_LIST.value, tuple(msg))
+        on_queue = self.SCI.ser.out_waiting
+        if on_queue > 0:
+            logger.warning(
+                f"Serial output queue not empty before sending QUERY_LIST: {on_queue} bytes. Flushing."
+            )
+            self.SCI.ser.flush()
+        self.SCI.write(Opcodes.QUERY_LIST.value, tuple(msg), True)
         time.sleep(0.015)  # wait 15 msec
 
         # Calculate total bytes to read

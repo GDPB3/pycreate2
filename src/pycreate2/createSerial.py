@@ -40,7 +40,7 @@ class SerialCommandInterface(object):
         """
         self.close()
 
-    def open(self, port: str, baud: int = 115200, timeout: int = 1):
+    def open(self, port: str, baud: int = 115200, timeout: int = 1, read_attempts: int = 100) -> bytes:
         """
         Opens a serial port to the create.
 
@@ -62,13 +62,15 @@ class SerialCommandInterface(object):
         else:
             raise Exception("Failed to open {} at {}".format(port, baud))
 
+        self.read_attempts = read_attempts
+
         # if we get data on open, it's a startup message.
         # read it and return it to be parsed/handled by caller
         startup_msg = self.ser.read(2048)
 
         return startup_msg
 
-    def write(self, opcode: int, data: tuple | None = None):
+    def write(self, opcode: int, data: tuple | None = None, flush: bool = False):
         """
         Writes a command to the create. There needs to be an opcode and optionally
         data. Not all commands have data associated with it.
@@ -81,7 +83,20 @@ class SerialCommandInterface(object):
         """
         msg = (opcode,) + data if data else (opcode,)
         self.ser.write(struct.pack("B" * len(msg), *msg))
+        if flush:
+            self.ser.flush()
         logger.debug("Wrote: {}".format(msg))
+
+    def flush_input(self):
+        """
+        Flushes the input buffer.
+        """
+        if not self.ser.is_open:
+            raise Exception("You must open the serial port first")
+
+        self.ser.reset_input_buffer()
+        self.read_buffer = bytearray()
+        logger.info("Flushed input buffer")
 
     def read(self, num_bytes: int) -> bytes:
         """
@@ -111,11 +126,9 @@ class SerialCommandInterface(object):
         # Then read the remaining bytes from the serial port
         remaining_bytes = num_bytes - len(output)
 
-
         # Read and filter
-        MAX_READ_ATTEMPTS = 100
         read_attempts = 0
-        while remaining_bytes > 0 and read_attempts < MAX_READ_ATTEMPTS:
+        while remaining_bytes > 0 and read_attempts < self.read_attempts:
             # Get the number of bytes currently available
             available_bytes = self.ser.in_waiting
 
@@ -139,7 +152,7 @@ class SerialCommandInterface(object):
 
             remaining_bytes = num_bytes - len(output)
 
-        if read_attempts == MAX_READ_ATTEMPTS:
+        if read_attempts == self.read_attempts:
             logger.error("Max read attempts reached while reading from serial port.")
 
         logger.debug(f"Final read output: {output}")
