@@ -88,6 +88,7 @@ between by calling different commands.
 
 | Date       | Version | Description                        |
 | ---------- | ------- | ---------------------------------- |
+| 2026-01-03 | 0.9.10  | Changed how reading is done        |
 | 2025-12-22 | 0.9.9   | I hate tests (filtering)           |
 | 2025-12-22 | 0.9.8   | Better filtering (yes, again)      |
 | 2025-12-21 | 0.9.3-7 | Lots of logging                    |
