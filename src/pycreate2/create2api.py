@@ -375,8 +375,6 @@ class Create2(object):
         sensor_data: dict[str, int] = {}
         index = 0
         for pkt in packet_list:
-            logger.debug(
-                f"Unpacking sensor '{pkt.name}' from bytes {index} to {index + pkt.size}")
             raw_bytes = packet_byte_data[index: index + pkt.size]
             sensor_data[pkt.name] = pkt.unpack(raw_bytes)
             index += pkt.size

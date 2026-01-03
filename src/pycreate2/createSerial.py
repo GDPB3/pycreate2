@@ -31,7 +31,7 @@ class SerialCommandInterface(object):
             dsrdtr=False,
         )
         self.read_buffer = bytearray()
-        self.read_attempts = 100
+        self.read_attempts = 3
 
     def __del__(self):
         """
@@ -41,7 +41,7 @@ class SerialCommandInterface(object):
         """
         self.close()
 
-    def open(self, port: str, baud: int = 115200, timeout: int = 1, read_attempts: int = 100) -> bytes:
+    def open(self, port: str, baud: int = 115200, timeout: int = 1, read_attempts: int = 3) -> bytes:
         """
         Opens a serial port to the create.
 
@@ -85,6 +85,7 @@ class SerialCommandInterface(object):
         msg = (opcode,) + data if data else (opcode,)
         self.ser.write(struct.pack("B" * len(msg), *msg))
         if flush:
+            logger.debug("Flushing output buffer")
             self.ser.flush()
         logger.debug("Wrote: {}".format(msg))
 
@@ -95,9 +96,10 @@ class SerialCommandInterface(object):
         if not self.ser.is_open:
             raise Exception("You must open the serial port first")
 
+        logger.info("Flushing input buffer")
+
         self.ser.reset_input_buffer()
         self.read_buffer = bytearray()
-        logger.info("Flushed input buffer")
 
     def read(self, num_bytes: int) -> bytes:
         """
@@ -128,32 +130,34 @@ class SerialCommandInterface(object):
         remaining_bytes = num_bytes - len(output)
 
         # Read and filter
-        read_attempts = 0
-        while remaining_bytes > 0 and read_attempts < self.read_attempts:
-            # Get the number of bytes currently available
-            available_bytes = self.ser.in_waiting
+        failed_attempts = 0
+        while remaining_bytes > 0 and failed_attempts < self.read_attempts:
+            # Try to read up the remaining bytes
+            raw_data = self.ser.read(remaining_bytes)
 
-            # If there are bytes available, read all and filter
+            if len(raw_data) == 0:
+                failed_attempts += 1
+                continue
+
+            # Check if there is more data available and read it too
+            available_bytes = self.ser.in_waiting
             if available_bytes > 0:
-                raw_data = self.ser.read(available_bytes)
-                logger.debug(f"Read raw data: {raw_data}")
-                filtered_data = self.filter_begin(raw_data)
-                bytes_to_take = min(remaining_bytes, len(filtered_data))
-                output.extend(filtered_data[:bytes_to_take])
-                extra = filtered_data[bytes_to_take:]
-                if extra:
-                    logger.warning(
-                        f"Accumulated extra bytes in read: {extra}"
-                    )
-                    self.read_buffer.extend(extra)
-            else:
-                # Wait a bit for more data to arrive
-                read_attempts += 1
-                time.sleep(0.02)
+                raw_data += self.ser.read(available_bytes)
+
+            logger.info(f"Read raw data: {raw_data} (len: {len(raw_data)})")
+            filtered_data = self.filter_begin(raw_data)
+            bytes_to_take = min(remaining_bytes, len(filtered_data))
+            output.extend(filtered_data[:bytes_to_take])
+            extra = filtered_data[bytes_to_take:]
+            if extra:
+                logger.warning(
+                    f"Accumulated extra bytes in read: {extra}"
+                )
+                self.read_buffer.extend(extra)
 
             remaining_bytes = num_bytes - len(output)
 
-        if read_attempts == self.read_attempts:
+        if failed_attempts >= self.read_attempts:
             logger.error("Max read attempts reached while reading from serial port.")
 
         logger.debug(f"Final read output: {output}")

@@ -21,7 +21,8 @@ class DummySerial:
         return len(self.buffer)
 
     def read(self, num_bytes: int) -> bytes:
-        return self.buffer[:num_bytes]
+        to_return, self.buffer = self.buffer[:num_bytes], self.buffer[num_bytes:]
+        return to_return
 
     def write(self, data: bytes):
         ...
