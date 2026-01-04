@@ -356,10 +356,10 @@ class Create2(object):
 
         # Request the packets
         msg = [len(packet_list)] + [pkt.id for pkt in packet_list]
-        on_queue = self.SCI.ser.out_waiting
+        on_queue = self.SCI.waiting()
         if on_queue > 0:
             logger.warning(
-                f"Serial output queue not empty before sending QUERY_LIST: {on_queue} bytes. Flushing."
+                f"Serial queue not empty before sending QUERY_LIST: {on_queue} bytes. Flushing."
             )
             self.SCI.ser.flush()
         self.SCI.write(Opcodes.QUERY_LIST.value, tuple(msg), True)
@@ -397,6 +397,12 @@ class Create2(object):
             f"Requesting sensor group {group_id} with sensors: {', '.join(f"'{pkt.name}' ({pkt.size} bytes)" for pkt in sensor_list)}")
 
         # Request the packet group
+        on_queue = self.SCI.waiting()
+        if on_queue > 0:
+            logger.warning(
+                f"Serial queue not empty before sending QUERY_LIST: {on_queue} bytes. Flushing."
+            )
+            self.SCI.ser.flush()
         self.SCI.write(Opcodes.SENSORS.value, (group_id,))
 
         # Calculate total bytes to read

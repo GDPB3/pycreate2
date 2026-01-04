@@ -89,6 +89,15 @@ class SerialCommandInterface(object):
             self.ser.flush()
         logger.debug("Wrote: {}".format(msg))
 
+    def waiting(self) -> int:
+        """
+        Returns the number of bytes waiting in the input buffer.
+        """
+        if not self.ser.is_open:
+            raise Exception("You must open the serial port first")
+
+        return self.ser.in_waiting + len(self.read_buffer)
+
     def flush_input(self):
         """
         Flushes the input buffer.
