@@ -88,6 +88,7 @@ between by calling different commands.
 
 | Date       | Version | Description                        |
 | ---------- | ------- | ---------------------------------- |
+| 2026-01-05 | 0.9.12  | Retries in sensor reading          |
 | 2026-01-04 | 0.9.11  | Pretty agresive serial flushing    |
 | 2026-01-03 | 0.9.10  | Changed how reading is done        |
 | 2025-12-22 | 0.9.9   | I hate tests (filtering)           |
