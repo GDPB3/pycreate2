@@ -325,6 +325,57 @@ class Create2(object):
 
     # ------------------------ Sensors ----------------------------
 
+    def _query_sensors_common(self, op: Opcodes, write_msg: tuple[int, ...], packet_list: list[sensors.Sensor], retries: int = 3) -> dict[str, int]:
+        # Calculate total bytes to read
+        total_bytes = sum(pkt.size for pkt in packet_list)
+        logger.debug(f"Expecting {total_bytes} bytes of sensor data")
+
+        packet_byte_data = b""
+
+        for retry in range(retries):
+            try:
+                # Check serial queue
+                on_queue = self.SCI.waiting()
+                if on_queue > 0:
+                    logger.warning(
+                        f"Serial queue not empty before sending {op.name}: {on_queue} bytes. Flushing."
+                    )
+                    self.SCI.ser.flush()
+
+                # Write the request
+                self.SCI.write(op.value, write_msg, True)
+                time.sleep(0.015)  # wait 15 msec
+
+                # Read the data
+                read_data = self.SCI.read(total_bytes)
+                if len(read_data) == total_bytes:
+                    packet_byte_data = read_data
+                    break
+                else:
+                    raise Exception(
+                        f"Expected {total_bytes} bytes, got {len(read_data)} bytes"
+                    )
+
+            except Exception as e:
+                logger.warning(
+                    f"Error during sensor query attempt {retry + 1}/{retries}: {e}"
+                )
+
+        if len(packet_byte_data) != total_bytes:
+            raise Exception(
+                f"Failed to read expected sensor data after {retries} attempts"
+            )
+
+        # Decode the data
+        sensor_data: dict[str, int] = {}
+        index = 0
+        for pkt in packet_list:
+            raw_bytes = packet_byte_data[index: index + pkt.size]
+            sensor_data[pkt.name] = pkt.unpack(raw_bytes)
+            index += pkt.size
+
+        return sensor_data
+
     def get_sensor_list(self, sensor_list: Sequence[str | int]) -> dict[str, int]:
         """
         Request a list of sensor packets by name or id.
@@ -356,30 +407,8 @@ class Create2(object):
 
         # Request the packets
         msg = [len(packet_list)] + [pkt.id for pkt in packet_list]
-        on_queue = self.SCI.waiting()
-        if on_queue > 0:
-            logger.warning(
-                f"Serial queue not empty before sending QUERY_LIST: {on_queue} bytes. Flushing."
-            )
-            self.SCI.ser.flush()
-        self.SCI.write(Opcodes.QUERY_LIST.value, tuple(msg), True)
-        time.sleep(0.015)  # wait 15 msec
-
-        # Calculate total bytes to read
-        total_bytes = sum(pkt.size for pkt in packet_list)
-        logger.debug(f"Expecting {total_bytes} bytes of sensor data")
-
-        packet_byte_data = self.SCI.read(total_bytes)
-
-        # Decode the data
-        sensor_data: dict[str, int] = {}
-        index = 0
-        for pkt in packet_list:
-            raw_bytes = packet_byte_data[index: index + pkt.size]
-            sensor_data[pkt.name] = pkt.unpack(raw_bytes)
-            index += pkt.size
-
-        return sensor_data
+        op = Opcodes.QUERY_LIST
+        return self._query_sensors_common(op, tuple(msg), packet_list)
 
     def get_sensor_group(self, group_id: int) -> dict[str, int]:
         """
@@ -397,28 +426,4 @@ class Create2(object):
             f"Requesting sensor group {group_id} with sensors: {', '.join(f"'{pkt.name}' ({pkt.size} bytes)" for pkt in sensor_list)}")
 
         # Request the packet group
-        on_queue = self.SCI.waiting()
-        if on_queue > 0:
-            logger.warning(
-                f"Serial queue not empty before sending QUERY_LIST: {on_queue} bytes. Flushing."
-            )
-            self.SCI.ser.flush()
-        self.SCI.write(Opcodes.SENSORS.value, (group_id,))
-
-        # Calculate total bytes to read
-        total_bytes = sum(pkt.size for pkt in sensor_list)
-        logger.debug(f"Expecting {total_bytes} bytes of sensor data")
-        time.sleep(0.015)  # wait 15 msec
-
-        # Read the data
-        group_data = self.SCI.read(total_bytes)
-        sensor_data: dict[str, int] = {}
-        index = 0
-        for pkt in sensor_list:
-            logger.debug(
-                f"Unpacking sensor '{pkt.name}' from bytes {index} to {index + pkt.size}")
-            raw_bytes = group_data[index: index + pkt.size]
-            sensor_data[pkt.name] = pkt.unpack(raw_bytes)
-            index += pkt.size
-
-        return sensor_data
+        return self._query_sensors_common(Opcodes.SENSORS, (group_id,), sensor_list)
