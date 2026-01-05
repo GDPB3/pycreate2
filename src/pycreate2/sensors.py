@@ -45,19 +45,27 @@ class Sensor:
         fmt = self.pack_format()
         return struct.pack(fmt, self.clamp(value))
 
-    def unpack(self, data: bytes) -> int:
+    def unpack(self, data: bytes, throw: bool = True) -> int:
         """Return unpacked value from bytes for this sensor packet."""
         if len(data) != self.size:
             logger.error(
                 f"Data length {len(data)} does not match expected size {self.size} for sensor {self.name} (ID {self.id})"
             )
-            raise ValueError("Invalid data length for unpacking sensor packet")
+            if throw:
+                raise ValueError("Invalid data length for unpacking sensor packet")
+            else:
+                return self.value_range[0]  # or some default value
         fmt = self.pack_format()
         unpacked = struct.unpack(fmt, data)[0]
 
         if (not (self.value_range[0] <= unpacked <= self.value_range[1])):
-            logger.warning(
-                f"Unpacked value {unpacked} out of range {self.value_range}")
+            if throw:
+                raise ValueError(
+                    f"Unpacked value {unpacked} out of range {self.value_range} for sensor {self.name} (ID {self.id})"
+                )
+            else:
+                logger.warning(
+                    f"Unpacked value {unpacked} out of range {self.value_range}")
 
         return unpacked
 

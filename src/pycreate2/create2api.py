@@ -16,7 +16,7 @@ class Create2(object):
     This is the only class that outside scripts should be interacting with.
     """
 
-    def __init__(self, port: str = "/dev/ttyUSB0", baud: int = 115200):
+    def __init__(self, port: str = "/dev/ttyUSB0", baud: int = 115200, sci: SerialCommandInterface | None = None):
         """
         Constructor.
 
@@ -25,18 +25,21 @@ class Create2(object):
         :param baud: default is 115200, can be set to 19200 doing nefarious things
         :type baud: int
         """
-        self.SCI = SerialCommandInterface()
-        startup_msg = self.SCI.open(port, baud)
-        if len(startup_msg) != 0:
-            # we just woke up, so we get lots of info.
-            startup_msg = startup_msg.split(b"\r\n")
-            self.manufacturing_date = startup_msg[3]
-            self.version = startup_msg[4]
-            logger.info(
-                "Got a wakeup message. Version: {}, Manufacturing Date: {}".format(
-                    self.version, self.manufacturing_date
+        if sci is not None:
+            self.SCI = sci
+        else:
+            self.SCI = SerialCommandInterface()
+            startup_msg = self.SCI.open(port, baud)
+            if len(startup_msg) != 0:
+                # we just woke up, so we get lots of info.
+                startup_msg = startup_msg.split(b"\r\n")
+                self.manufacturing_date = startup_msg[3]
+                self.version = startup_msg[4]
+                logger.info(
+                    "Got a wakeup message. Version: {}, Manufacturing Date: {}".format(
+                        self.version, self.manufacturing_date
+                    )
                 )
-            )
 
         self.sleep_timer = 0.5
         self.song_list = {}
@@ -330,8 +333,6 @@ class Create2(object):
         total_bytes = sum(pkt.size for pkt in packet_list)
         logger.debug(f"Expecting {total_bytes} bytes of sensor data")
 
-        packet_byte_data = b""
-
         for retry in range(retries):
             try:
                 # Check serial queue
@@ -348,33 +349,29 @@ class Create2(object):
 
                 # Read the data
                 read_data = self.SCI.read(total_bytes)
-                if len(read_data) == total_bytes:
-                    packet_byte_data = read_data
-                    break
-                else:
+                if len(read_data) != total_bytes:
                     raise Exception(
                         f"Expected {total_bytes} bytes, got {len(read_data)} bytes"
                     )
 
+                # Decode the data
+                sensor_data: dict[str, int] = {}
+                index = 0
+                for pkt in packet_list:
+                    raw_bytes = read_data[index: index + pkt.size]
+                    sensor_data[pkt.name] = pkt.unpack(raw_bytes)
+                    index += pkt.size
+
+                return sensor_data
+
             except Exception as e:
-                logger.warning(
-                    f"Error during sensor query attempt {retry + 1}/{retries}: {e}"
+                logger.error(
+                    f"Error reading sensors on attempt {retry + 1}/{retries}: {e}"
                 )
+                if retry == retries - 1:
+                    raise e
 
-        if len(packet_byte_data) != total_bytes:
-            raise Exception(
-                f"Failed to read expected sensor data after {retries} attempts"
-            )
-
-        # Decode the data
-        sensor_data: dict[str, int] = {}
-        index = 0
-        for pkt in packet_list:
-            raw_bytes = packet_byte_data[index: index + pkt.size]
-            sensor_data[pkt.name] = pkt.unpack(raw_bytes)
-            index += pkt.size
-
-        return sensor_data
+        raise Exception("Unreachable code reached in _query_sensors_common")
 
     def get_sensor_list(self, sensor_list: Sequence[str | int]) -> dict[str, int]:
         """

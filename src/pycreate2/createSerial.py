@@ -6,7 +6,6 @@ import time
 
 logger = logging.getLogger("create2serial")
 
-
 class SerialCommandInterface(object):
     """
     This class handles sending commands to the Create2. Writes will take in tuples
