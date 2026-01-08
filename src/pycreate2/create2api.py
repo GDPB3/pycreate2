@@ -326,6 +326,39 @@ class Create2(object):
 
         return time_len
 
+    # ------------------------ Clean ----------------------------
+
+    def brush_motors(self, main_brush: bool, vacuum: bool, side_brush: bool, invert_main: bool = False, invert_side: bool = False):
+        """
+        Control the brush motors
+
+        :param main_brush: True to turn on main brush
+        :type main_brush: bool
+        :param side_brush: True to turn on side brush
+        :type side_brush: bool
+        :param vacuum: True to turn on vacuum
+        :type vacuum: bool
+        """
+        bits = 0
+        if main_brush:
+            bits |= 0b00000100
+        if vacuum:
+            bits |= 0b00000010
+        if side_brush:
+            bits |= 0b00000001
+        if invert_side:
+            bits |= 0b00001000
+        if invert_main:
+            bits |= 0b00010000
+
+        self.SCI.write(Opcodes.MOTORS.value, (bits,))
+
+    def stop_cleaning(self):
+        """
+        Stops all cleaning motors
+        """
+        self.brush_motors(False, False, False)
+
     # ------------------------ Sensors ----------------------------
 
     def _query_sensors_common(self, op: Opcodes, write_msg: tuple[int, ...], packet_list: list[sensors.Sensor], retries: int = 3) -> dict[str, int]:
