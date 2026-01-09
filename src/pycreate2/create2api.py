@@ -374,7 +374,7 @@ class Create2(object):
                     logger.warning(
                         f"Serial queue not empty before sending {op.name}: {on_queue} bytes. Flushing."
                     )
-                    self.SCI.ser.flush()
+                    self.SCI.flush_input()
 
                 # Write the request
                 self.SCI.write(op.value, write_msg, True)
@@ -401,6 +401,7 @@ class Create2(object):
                 logger.error(
                     f"Error reading sensors on attempt {retry + 1}/{retries}: {e}"
                 )
+                self.SCI.flush_input()
                 if retry == retries - 1:
                     raise e
 
