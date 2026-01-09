@@ -29,8 +29,6 @@ class SerialCommandInterface(object):
             rtscts=False,
             dsrdtr=False,
         )
-        self.read_buffer = bytearray()
-        self.read_attempts = 3
 
     def __del__(self):
         """
@@ -40,7 +38,7 @@ class SerialCommandInterface(object):
         """
         self.close()
 
-    def open(self, port: str, baud: int = 115200, timeout: int = 1, read_attempts: int = 3) -> bytes:
+    def open(self, port: str, baud: int = 115200, timeout: int = 1) -> bytes:
         """
         Opens a serial port to the create.
 
@@ -61,8 +59,6 @@ class SerialCommandInterface(object):
             logger.info("Create opened serial: {}".format(self.ser))
         else:
             raise Exception("Failed to open {} at {}".format(port, baud))
-
-        self.read_attempts = read_attempts
 
         # if we get data on open, it's a startup message.
         # read it and return it to be parsed/handled by caller
@@ -95,7 +91,7 @@ class SerialCommandInterface(object):
         if not self.ser.is_open:
             raise Exception("You must open the serial port first")
 
-        return self.ser.in_waiting + len(self.read_buffer)
+        return self.ser.in_waiting
 
     def flush_input(self):
         """
@@ -107,7 +103,6 @@ class SerialCommandInterface(object):
         logger.info("Flushing input buffer")
 
         self.ser.reset_input_buffer()
-        self.read_buffer = bytearray()
 
     def read(self, num_bytes: int) -> bytes:
         """
@@ -119,57 +114,21 @@ class SerialCommandInterface(object):
         if not self.ser.is_open:
             raise Exception("You must open the serial port first")
 
-        output = bytearray()
+        # Read
+        raw_data = self.ser.read(num_bytes)
+        available_bytes = self.ser.in_waiting
+        if available_bytes > 0:
+            raw_data += self.ser.read(available_bytes)
 
-        # First read from the internal buffer
-        if len(self.read_buffer) >= num_bytes:
-            output.extend(self.read_buffer[:num_bytes])
-            self.read_buffer = self.read_buffer[num_bytes:]
-            logger.debug(f"Read from buffer: {output}")
-            return bytes(output)
+        filtered_data = self.filter_begin(raw_data)
+        if len(filtered_data) != num_bytes:
+            logger.error(
+                f"Expected {num_bytes} bytes but got {len(filtered_data)} bytes after filtering"
+            )
+            raise Exception("Did not receive expected number of bytes from Create2")
 
-        if len(self.read_buffer) > 0:
-            logger.debug(
-                f"Reading {len(self.read_buffer)} bytes from read buffer")
-            output.extend(self.read_buffer)
-            self.read_buffer = bytearray()
-
-        # Then read the remaining bytes from the serial port
-        remaining_bytes = num_bytes - len(output)
-
-        # Read and filter
-        failed_attempts = 0
-        while remaining_bytes > 0 and failed_attempts < self.read_attempts:
-            # Try to read up the remaining bytes
-            raw_data = self.ser.read(remaining_bytes)
-
-            if len(raw_data) == 0:
-                failed_attempts += 1
-                continue
-
-            # Check if there is more data available and read it too
-            available_bytes = self.ser.in_waiting
-            if available_bytes > 0:
-                raw_data += self.ser.read(available_bytes)
-
-            logger.info(f"Read raw data: {raw_data} (len: {len(raw_data)})")
-            filtered_data = self.filter_begin(raw_data)
-            bytes_to_take = min(remaining_bytes, len(filtered_data))
-            output.extend(filtered_data[:bytes_to_take])
-            extra = filtered_data[bytes_to_take:]
-            if extra:
-                logger.warning(
-                    f"Accumulated extra bytes in read: {extra}"
-                )
-                self.read_buffer.extend(extra)
-
-            remaining_bytes = num_bytes - len(output)
-
-        if failed_attempts >= self.read_attempts:
-            logger.error("Max read attempts reached while reading from serial port.")
-
-        logger.debug(f"Final read output: {output}")
-        return bytes(output)
+        logger.debug(f"Final read output: {filtered_data}")
+        return bytes(filtered_data)
 
     def read_until(self, delim: bytes = b"\n\r") -> bytes:
         """
