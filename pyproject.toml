@@ -1,6 +1,6 @@
 [project]
 name = "pycreate2"
-version = "0.9.14.2"
+version = "0.9.14.3"
 description = "A library to control iRobot Create 2 with python"
 readme = "readme.md"
 homepage = "https://pypi.org/project/pycreate2/"

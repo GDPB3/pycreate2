@@ -25,6 +25,7 @@ class Create2(object):
         :param baud: default is 115200, can be set to 19200 doing nefarious things
         :type baud: int
         """
+        self.sleep_timer = 0.5
         if sci is not None:
             self.SCI = sci
         else:
@@ -41,7 +42,6 @@ class Create2(object):
                     )
                 )
 
-        self.sleep_timer = 0.5
         self.song_list = {}
 
     @classmethod
