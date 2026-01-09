@@ -101,7 +101,8 @@ class SerialCommandInterface(object):
             raise Exception("You must open the serial port first")
 
         logger.info("Flushing input buffer")
-
+        self.ser.flush()
+        self.ser.reset_output_buffer()
         self.ser.reset_input_buffer()
 
     def read(self, num_bytes: int) -> bytes:
