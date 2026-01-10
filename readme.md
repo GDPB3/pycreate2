@@ -88,7 +88,7 @@ between by calling different commands.
 
 | Date       | Version | Description                        |
 | ---------- | ------- | ---------------------------------- |
-| 2026-01-10 | 1.0.0   | I would say is stable enough       |
+| 2026-01-10 | 1.0.0   | I would say it is stable enough    |
 | 2026-01-09 | 0.9.13  | Vacuum and brush motors            |
 | 2026-01-05 | 0.9.12  | Retries in sensor reading          |
 | 2026-01-04 | 0.9.11  | Pretty agresive serial flushing    |
