@@ -3,7 +3,7 @@ import logging
 import sys
 from pycreate2.createSerial import SerialCommandInterface
 from dataclasses import dataclass
-from threading import Thread
+from threading import Thread, Lock
 import time
 
 @dataclass
@@ -17,6 +17,7 @@ class DummySerial:
         self.port = "/dev/ttyUSB0"
         self.baudrate = 115200
         self.responses: list[RespondWith] = []
+        self.buffer_lock = Lock()
 
     def close(self):
         ...
@@ -33,15 +34,26 @@ class DummySerial:
         self.responses.append(RespondWith(data, wait))
 
     def read(self, num_bytes: int) -> bytes:
-        time.sleep(0.05)  # Simulate a small delay
-        to_return, self.buffer = self.buffer[:num_bytes], self.buffer[num_bytes:]
+        with self.buffer_lock:
+            to_return, self.buffer = self.buffer[:num_bytes], self.buffer[num_bytes:]
+
+        if len(to_return) < num_bytes:
+            time.sleep(1) # simulate waiting for more data
         return to_return
+
+    def reset_output_buffer(self):
+        pass
+
+    def reset_input_buffer(self):
+        with self.buffer_lock:
+            self.buffer.clear()
 
     def _respond(self, response: RespondWith):
         if response.wait > 0:
             time.sleep(response.wait)
         print("DummySerial responding with:", response.data)
-        self.buffer += response.data
+        with self.buffer_lock:
+            self.buffer += response.data
 
     def write(self, data: bytes):
         # If there are responses queued, respond with them
@@ -54,7 +66,8 @@ class DummySerial:
         return len(self.buffer)
 
     def flush(self):
-        self.buffer.clear()
+        with self.buffer_lock:
+            self.buffer.clear()
 
 @pytest.fixture(scope="session", autouse=True)
 def logging_setup():

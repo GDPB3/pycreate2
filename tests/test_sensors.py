@@ -38,7 +38,6 @@ def test_read_sensors(logging_setup, dummy_interface):
 def test_read_sensors_no_data_first(logging_setup, dummy_interface):
     create2 = Create2(sci=dummy_interface) # type: ignore
     ser: DummySerial = dummy_interface.ser  # type: ignore
-    ser.add_response(b'', wait=0.1)
     ser.add_response(b'\x01', wait=0.1)
     sensor_list = ["Charger Available"]
     result = create2.get_sensor_list(sensor_list)
